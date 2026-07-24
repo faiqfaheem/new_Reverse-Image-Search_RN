@@ -83,6 +83,18 @@ export default function ResultScreen({ searchQuery: propSearchQuery, imageUri: p
   const searchQuery = route?.params?.searchQuery ?? propSearchQuery;
   const imageUri = route?.params?.imageUri ?? propImageUri;
 
+  const handleBackToHome = () => {
+    if (navigation) {
+      try {
+        navigation.navigate('Home');
+      } catch (_) {
+        navigation.navigate('HomeScreen');
+      }
+    } else if (onBack) {
+      onBack();
+    }
+  };
+
   const handleBack = () => {
     if (navigation?.canGoBack()) {
       navigation.goBack();
@@ -644,8 +656,22 @@ export default function ResultScreen({ searchQuery: propSearchQuery, imageUri: p
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="transparent" translucent={true} />
-      <View style={styles.header}>
-        <Text style={styles.headerTitle} numberOfLines={1}>Image Search</Text>
+      <View style={styles.headerContainer}>
+        <TouchableOpacity
+          onPress={handleBackToHome}
+          style={styles.backButton}
+          activeOpacity={0.7}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        >
+          <ArrowLeft
+            size={24}
+            color="#FFFFFF"
+            style={Platform.OS === 'ios' ? { width: 24, height: 24 } : null}
+          />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle} numberOfLines={1}>
+          Image Search
+        </Text>
       </View>
 
 
@@ -853,25 +879,25 @@ export default function ResultScreen({ searchQuery: propSearchQuery, imageUri: p
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#000' },
-  // Black Header
-  header: {
-    height: 150 * scale,
-    backgroundColor: '#000',
-    justifyContent: 'flex-end',
-    paddingBottom: 20 * scale,
+  headerContainer: {
+    height: Platform.OS === 'android' ? 56 + (StatusBar.currentHeight || 0) : 56,
+    paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 0) : 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    backgroundColor: '#000000',
+  },
+  backButton: {
+    padding: 4,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   headerTitle: {
-    position: 'absolute',
-    left: 46 * scale,
-    top: 65 * scale,
-    width: 318 * scale,
-    height: 58 * scale,
     color: '#FFFFFF',
     fontFamily: 'Inter',
-    fontWeight: '500',
-    fontSize: 48.68 * scale,
-    lineHeight: 48.68 * scale * 1.2,
-    letterSpacing: 0,
+    fontWeight: '600',
+    fontSize: 20,
+    marginLeft: 12,
   },
 
 

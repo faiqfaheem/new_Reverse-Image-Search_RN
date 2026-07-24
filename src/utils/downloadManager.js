@@ -13,6 +13,14 @@ const formatIOSUri = (path) => {
     } catch (_) {
       cleanPath = path;
     }
+
+    // Reconstruct current Sandbox Document Directory path if UUID changed on iOS rebuild
+    if (cleanPath.includes('/Documents/')) {
+      const filename = cleanPath.split('/Documents/').pop();
+      const currentDocDir = FileSystem.documentDirectory;
+      return `${currentDocDir}${filename}`;
+    }
+
     if (cleanPath.startsWith('/') && !cleanPath.startsWith('file://')) {
       return `file://${cleanPath}`;
     }

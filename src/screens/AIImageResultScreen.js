@@ -18,7 +18,7 @@ import {
   Platform,
   BackHandler,
 } from 'react-native';
-import { ArrowLeft, X } from 'lucide-react-native';
+import { ArrowLeft, Download, Sparkles, X } from 'lucide-react-native';
 import { generateAIImage } from '../services/aiService';
 import * as FileSystem from 'expo-file-system/legacy';
 import * as MediaLibrary from 'expo-media-library';
@@ -59,17 +59,10 @@ export default function AIImageResultScreen({ route, navigation }) {
 
   const ratioNumber = getAspectRatioNumber(aspectRatio);
 
-  const [images, setImages] = useState(
-    Array.from({ length: imageCount }, (_, idx) => ({
-      id: idx,
-      loading: true,
-      uri: null,
-      error: null,
-    }))
-  );
+  const [iterations, setIterations] = useState([]);
+  const [selectedIndex, setSelectedIndex] = useState(0);
 
   const [previewImage, setPreviewImage] = useState(null);
-  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
   const [toastVisible, setToastVisible] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
@@ -178,74 +171,95 @@ export default function AIImageResultScreen({ route, navigation }) {
     };
   }, []);
 
-  const runGenerations = () => {
-    const freshImages = Array.from({ length: imageCount }, (_, idx) => ({
-      id: idx,
-      loading: true,
-      uri: null,
-      error: null,
-    }));
+  const [globalLoading, setGlobalLoading] = useState(false);
+  const [loadingStage, setLoadingStage] = useState(0);
 
-    setImages(freshImages);
-    setSelectedImageIndex(0);
+  useEffect(() => {
+    if (!globalLoading) {
+      setLoadingStage(0);
+      return;
+    }
+    const t1 = setTimeout(() => setLoadingStage(1), 2200);
+    const t2 = setTimeout(() => setLoadingStage(2), 5500);
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
+  }, [globalLoading]);
 
-    freshImages.forEach(async (img) => {
-      try {
-        const controller = new AbortController();
-        abortControllersRef.current[img.id] = controller;
-        const base64Uri = await generateAIImage(currentPrompt, {
-          aspectRatio,
-          negativePrompt,
-          style_preset,
-          signal: controller.signal
-        });
-        if (!isMounted.current) return;
-        setImages((prev) =>
-          prev.map((item) =>
-            item.id === img.id ? { ...item, loading: false, uri: base64Uri } : item
-          )
-        );
-      } catch (err) {
-        if (!isMounted.current || err.name === 'AbortError') return;
-        console.error(`Generation error for slot ${img.id}:`, err);
-        setImages((prev) =>
-          prev.map((item) =>
-            item.id === img.id
-              ? { ...item, loading: false, error: err.message || 'Generation failed' }
-              : item
-          )
-        );
-        Alert.alert('Generation Error', `Generation failed: ${err.message || 'Please check your connection and try again.'}`);
-      }
+  const handleGenerationSuccess = (newImagesArray) => {
+    setIterations((prevIterations) => {
+      const updatedList = [...prevIterations, ...newImagesArray];
+      setSelectedIndex(updatedList.length - 1);
+      return updatedList;
     });
+  };
+
+  const runGenerations = async () => {
+    setGlobalLoading(true);
+    try {
+      const controller = new AbortController();
+      const reqId = Date.now().toString();
+      abortControllersRef.current[reqId] = controller;
+      const base64Uri = await generateAIImage(currentPrompt, {
+        aspectRatio,
+        negativePrompt,
+        style_preset,
+        signal: controller.signal
+      });
+      if (!isMounted.current) return;
+      handleGenerationSuccess([base64Uri]);
+      setGlobalLoading(false);
+    } catch (err) {
+      if (!isMounted.current || err.name === 'AbortError') return;
+      console.error('Text-to-Image Generation error:', err);
+      setGlobalLoading(false);
+      Alert.alert(
+        'Generation Error',
+        `Generation failed: ${err.message || 'Please check your connection and try again.'}`
+      );
+      if (navigation) {
+        try {
+          navigation.navigate('Home');
+        } catch (_) {
+          navigation.navigate('HomeScreen');
+        }
+      }
+    } finally {
+      setGlobalLoading(false);
+    }
   };
 
   useEffect(() => {
     runGenerations();
   }, []);
 
+  const handleBackToHome = () => {
+    if (globalLoading) return;
+    if (navigation) {
+      try {
+        navigation.navigate('Home');
+      } catch (_) {
+        navigation.navigate('HomeScreen');
+      }
+    }
+  };
+
   useEffect(() => {
     const onBackPress = () => {
-      const isGenerating = images.some(img => img.loading);
-      if (isGenerating) return true; // Block hardware back during generation
+      if (globalLoading) return true;
       if (previewImage) {
         setPreviewImage(null);
         return true;
       }
-      if (navigation?.canGoBack()) {
-        navigation.goBack();
-        return true;
-      } else if (navigation) {
-        navigation.navigate('AIArtDashboard');
-        return true;
-      }
-      return false;
+      handleBackToHome();
+      return true;
     };
     const sub = BackHandler.addEventListener('hardwareBackPress', onBackPress);
     return () => sub.remove();
-  }, [previewImage, navigation]);
+  }, [previewImage, navigation, globalLoading]);
 
-  const selectedImageData = images.find(img => img.id === selectedImageIndex);
+  const currentImageUri = iterations[selectedIndex] || null;
 
   return (
     <SafeAreaView style={styles.container}>
@@ -255,20 +269,36 @@ export default function AIImageResultScreen({ route, navigation }) {
       <View style={styles.header}>
         <TouchableOpacity 
           style={styles.backBtn} 
-          onPress={() => {
-            const isGenerating = images.some(img => img.loading);
-            if (!isGenerating) navigation?.goBack();
-          }}
+          onPress={handleBackToHome}
         >
-          <ArrowLeft size={24} color="#FFF" />
+          <ArrowLeft size={24} color="#FFF" style={Platform.OS === 'ios' ? { width: 24, height: 24 } : null} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Chat With AI</Text>
         <TouchableOpacity
-          style={styles.saveHeaderBtn}
-          onPress={() => handleDownloadImage(selectedImageData?.uri)}
-          disabled={!selectedImageData?.uri}
+          style={[
+            styles.saveHeaderBtn,
+            Platform.OS === 'ios' && {
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'center',
+            },
+          ]}
+          onPress={() => handleDownloadImage(currentImageUri)}
+          disabled={!currentImageUri}
         >
-          <Image source={require('../components/Container (1).png')} style={{ width: 39.11 * scale, height: 54 * scale, marginRight: 4 }} resizeMode="contain" />
+          {Platform.OS === 'ios' ? (
+            <Download
+              size={Platform.OS === 'ios' ? 20 : 20}
+              color="#131313"
+              style={{ width: 20, height: 20, marginRight: 4 }}
+            />
+          ) : (
+            <Image
+              source={require('../components/Container (1).png')}
+              style={{ width: 39.11 * scale, height: 54 * scale, marginRight: 4 }}
+              resizeMode="contain"
+            />
+          )}
           <Text style={styles.saveHeaderBtnText}>Save</Text>
         </TouchableOpacity>
       </View>
@@ -277,29 +307,38 @@ export default function AIImageResultScreen({ route, navigation }) {
 
         {/* Main Image Preview */}
         <TouchableOpacity
-          style={styles.mainPreviewContainer}
+          style={[
+            styles.mainPreviewContainer,
+            Platform.OS === 'ios' && {
+              width: '100%',
+              aspectRatio: 1,
+              borderRadius: 16,
+              overflow: 'hidden',
+              backgroundColor: '#1E1E2A',
+              alignSelf: 'center',
+            },
+          ]}
           activeOpacity={0.9}
           onPress={() => {
-            if (selectedImageData?.uri) {
-              setPreviewImage(selectedImageData.uri);
+            if (currentImageUri) {
+              setPreviewImage(currentImageUri);
             }
           }}
         >
-          {selectedImageData?.loading ? (
+          {globalLoading && iterations.length === 0 ? (
             <ActivityIndicator size="large" color="#ADC7FF" />
-          ) : selectedImageData?.error ? (
-            <Text style={styles.errorText}>Failed to generate</Text>
-          ) : selectedImageData?.uri ? (
+          ) : currentImageUri ? (
             <Image
-              source={{ uri: selectedImageData.uri }}
+              source={{ uri: currentImageUri }}
               style={[
                 styles.mainPreviewImage,
                 Platform.OS === 'ios' && {
-                  width: Math.round(689.62 * scale),
-                  height: Math.round(862.02 * scale),
+                  width: '100%',
+                  height: '100%',
+                  resizeMode: 'cover',
                 },
               ]}
-              resizeMode="contain"
+              resizeMode={Platform.OS === 'ios' ? 'cover' : 'contain'}
             />
           ) : (
             <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
@@ -308,42 +347,36 @@ export default function AIImageResultScreen({ route, navigation }) {
           )}
         </TouchableOpacity>
 
-        {/* More Variations */}
-        {imageCount > 1 && (
+        {/* More Variations / Iterations */}
+        {iterations.length > 0 && (
           <View style={styles.variationsSection}>
             <View style={styles.variationsHeader}>
               <Text style={styles.variationsTitle}>MORE VARIATIONS</Text>
-              <Text style={styles.variationsCount}>{imageCount} Iterations</Text>
+              <Text style={styles.variationsCount}>
+                {iterations.length} {iterations.length === 1 ? 'Iteration' : 'Iterations'}
+              </Text>
             </View>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.variationsScroll}>
-              {images.map((item) => (
+              {iterations.map((imgUri, index) => (
                 <TouchableOpacity
-                  key={item.id}
+                  key={index}
                   style={[
                     styles.variationThumbnailWrapper,
-                    selectedImageIndex === item.id && styles.variationThumbnailSelected
+                    selectedIndex === index && styles.variationThumbnailSelected
                   ]}
-                  onPress={() => setSelectedImageIndex(item.id)}
+                  onPress={() => setSelectedIndex(index)}
                 >
-                  {item.loading ? (
-                    <ActivityIndicator size="small" color="#ADC7FF" />
-                  ) : item.error ? (
-                    <Text style={styles.errorIcon}>⚠️</Text>
-                  ) : item.uri ? (
-                    <Image
-                      source={{ uri: item.uri }}
-                      style={[
-                        styles.variationThumbnail,
-                        Platform.OS === 'ios' && {
-                          width: Math.round(180 * scale),
-                          height: Math.round(180 * scale),
-                        },
-                      ]}
-                      resizeMode="cover"
-                    />
-                  ) : (
-                    <Text style={styles.errorIcon}>🖼️</Text>
-                  )}
+                  <Image
+                    source={{ uri: imgUri }}
+                    style={[
+                      styles.variationThumbnail,
+                      Platform.OS === 'ios' && {
+                        width: Math.round(180 * scale),
+                        height: Math.round(180 * scale),
+                      },
+                    ]}
+                    resizeMode="cover"
+                  />
                 </TouchableOpacity>
               ))}
             </ScrollView>
@@ -375,17 +408,39 @@ export default function AIImageResultScreen({ route, navigation }) {
 
       {/* Generate More Button */}
       <View style={styles.bottomContainer}>
-        <TouchableOpacity style={styles.generateMoreBtn} onPress={async () => {
-          const usage = await checkUsageLimit('text_to_image', imageCount);
-          if (!usage.allowed) {
-            Alert.alert('Limit Reached', `Not enough credits! You need ${imageCount} credits, but only have ${usage.remaining} left today.`);
-            return;
-          }
-          await incrementUsage('text_to_image', imageCount);
-          runGenerations();
-        }}>
+        <TouchableOpacity
+          style={[
+            styles.generateMoreBtn,
+            Platform.OS === 'ios' && {
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'center',
+            },
+          ]}
+          onPress={async () => {
+            const usage = await checkUsageLimit('text_to_image', imageCount);
+            if (!usage.allowed) {
+              Alert.alert('Limit Reached', `Not enough credits! You need ${imageCount} credits, but only have ${usage.remaining} left today.`);
+              return;
+            }
+            await incrementUsage('text_to_image', imageCount);
+            runGenerations();
+          }}
+        >
           <Text style={styles.generateMoreBtnText}>Generate More</Text>
-          <Image source={require('../components/Container (3).png')} style={{ width: 52.55 * scale, height: 52.55 * scale }} resizeMode="contain" />
+          {Platform.OS === 'ios' ? (
+            <Sparkles
+              size={Platform.OS === 'ios' ? 20 : 20}
+              color="#131313"
+              style={{ width: 20, height: 20, marginLeft: 8 }}
+            />
+          ) : (
+            <Image
+              source={require('../components/Container (3).png')}
+              style={{ width: 52.55 * scale, height: 52.55 * scale }}
+              resizeMode="contain"
+            />
+          )}
         </TouchableOpacity>
       </View>
 
@@ -398,6 +453,32 @@ export default function AIImageResultScreen({ route, navigation }) {
           {previewImage && (
             <Image source={{ uri: previewImage }} style={[styles.modalPreviewImage, { aspectRatio: ratioNumber }]} />
           )}
+        </View>
+      </Modal>
+
+      {/* Multi-Step Generation Dialogue Modal */}
+      <Modal visible={globalLoading} transparent={true} animationType="fade">
+        <View style={styles.modalLoadingOverlay}>
+          <View style={styles.loadingCard}>
+            <ActivityIndicator size="large" color="#ADC7FF" style={{ marginBottom: 16 }} />
+            <Text style={styles.loadingStageTitle}>
+              {loadingStage === 0 ? "Sending Request..." : loadingStage === 1 ? "Processing Image..." : "Finalizing Render..."}
+            </Text>
+            <Text style={styles.loadingStageSubtext}>
+              {loadingStage === 0 
+                ? "Uploading prompt & settings to AI engine..." 
+                : loadingStage === 1 
+                ? "Synthesizing artwork via Vision-X models..." 
+                : "Applying high-res detail & finalizing output..."}
+            </Text>
+
+            {/* Step Progress Indicators */}
+            <View style={styles.stepDotsRow}>
+              <View style={[styles.stepDot, loadingStage >= 0 && styles.stepDotActive]} />
+              <View style={[styles.stepDot, loadingStage >= 1 && styles.stepDotActive]} />
+              <View style={[styles.stepDot, loadingStage >= 2 && styles.stepDotActive]} />
+            </View>
+          </View>
         </View>
       </Modal>
 
@@ -661,6 +742,59 @@ const styles = StyleSheet.create({
     fontFamily: 'Geist',
     fontWeight: '600',
     textAlign: 'center',
+  },
+  modalLoadingOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.85)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+  },
+  loadingCard: {
+    width: '100%',
+    maxWidth: 320,
+    backgroundColor: '#1C1C26',
+    borderRadius: 24,
+    padding: 24,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#2A2A35',
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+  },
+  loadingStageTitle: {
+    color: '#FFF',
+    fontSize: 18,
+    fontFamily: 'Geist',
+    fontWeight: 'bold',
+    marginBottom: 6,
+    textAlign: 'center',
+  },
+  loadingStageSubtext: {
+    color: '#8B90A0',
+    fontSize: 13,
+    fontFamily: 'Geist',
+    textAlign: 'center',
+    marginBottom: 20,
+    lineHeight: 18,
+  },
+  stepDotsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  stepDot: {
+    width: 24,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#2A2A35',
+  },
+  stepDotActive: {
+    backgroundColor: '#ADC7FF',
   },
 });
 

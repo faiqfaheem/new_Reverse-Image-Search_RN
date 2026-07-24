@@ -11,6 +11,8 @@ import {
   Platform
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { usePremium } from '../context/PremiumContext';
 
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -45,7 +47,7 @@ export default function OnboardingScreen({ navigation }) {
   const insets = useSafeAreaInsets();
   const [currentIndex, setCurrentIndex] = useState(0);
   const scrollViewRef = useRef(null);
-
+  const { flagOnboardingComplete } = usePremium();
 
   const handleScroll = (event) => {
     const contentOffsetX = event.nativeEvent.contentOffset.x;
@@ -55,15 +57,28 @@ export default function OnboardingScreen({ navigation }) {
     }
   };
 
+  const handleCompleteOnboarding = async () => {
+    try {
+      await AsyncStorage.setItem('hasCompletedOnboarding', 'true');
+      if (flagOnboardingComplete) {
+        await flagOnboardingComplete();
+      }
+    } catch (error) {
+      console.error('Error saving onboarding state:', error);
+    } finally {
+      navigation.reset({ index: 0, routes: [{ name: 'Home' }] });
+    }
+  };
+
   const handleNext = async () => {
-    if (currentIndex < 2) {
+    if (currentIndex < onboardingSlides.length - 1) {
       scrollViewRef.current?.scrollTo({
         x: (currentIndex + 1) * SCREEN_WIDTH,
         animated: true,
       });
       setCurrentIndex(currentIndex + 1);
     } else {
-      navigation.reset({ index: 0, routes: [{ name: 'Home' }] }); // Temporarily bypassed PremiumVIP
+      await handleCompleteOnboarding();
     }
   };
 

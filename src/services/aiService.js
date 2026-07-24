@@ -2,6 +2,7 @@ import axios from 'axios';
 import { Buffer } from 'buffer';
 import * as ImageManipulator from 'expo-image-manipulator';
 import * as FileSystem from 'expo-file-system/legacy';
+import { Platform } from 'react-native';
 
 /**
  * Connects to deAPI's generations API to generate an image based on the prompt text and options.
@@ -175,8 +176,14 @@ export async function generateAIImage(promptText, options = {}) {
  * @param {object} options - Generation options containing signal
  * @returns {Promise<string>} Output render result image as Base64 or URL data URI.
  */
+const formatIosImageUri = (uri) => {
+  if (Platform.OS !== 'ios' || !uri) return uri;
+  // Ensure file:// scheme exists for iOS multi-part uploads
+  return uri.startsWith('file://') ? uri : `file://${uri}`;
+};
+
 export async function generateImageToImage(sourceImageUri, style_preset, options = {}) {
-  const { signal } = options;
+  const { aspectRatio = '1:1', signal } = options;
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 120000); // 2 minute default timeout
   const fetchSignal = signal || controller.signal;
@@ -186,18 +193,27 @@ export async function generateImageToImage(sourceImageUri, style_preset, options
       throw new Error("EXPO_PUBLIC_DEAPI_API_KEY is not defined in your .env configuration.");
     }
 
-    console.log("[deAPI Engine] Launching Image-to-Image synthesis job...");
+    const ratioToSize = {
+      '1:1': { width: 1024, height: 1024 },
+      '4:3': { width: 1024, height: 768 },
+      '3:2': { width: 1024, height: 683 },
+      '2:3': { width: 683, height: 1024 },
+      '16:9': { width: 1024, height: 576 },
+      '9:16': { width: 576, height: 1024 },
+      '5:4': { width: 1024, height: 819 },
+      '4:5': { width: 819, height: 1024 }
+    };
+    const sizeObj = ratioToSize[aspectRatio] || ratioToSize['1:1'];
 
-    let validSourceUri = sourceImageUri;
-    if (Platform.OS === 'ios' && typeof sourceImageUri === 'string' && sourceImageUri.startsWith('/') && !sourceImageUri.startsWith('file://')) {
-      validSourceUri = `file://${sourceImageUri}`;
-    }
+    console.log(`[deAPI Engine] Launching Image-to-Image synthesis job... Aspect Ratio: "${aspectRatio}", Size: ${sizeObj.width}x${sizeObj.height}`);
+
+    const validSourceUri = formatIosImageUri(sourceImageUri);
 
     let processedImageUri = validSourceUri;
     try {
       const manipResult = await ImageManipulator.manipulateAsync(
         validSourceUri,
-        [{ resize: { width: 1024 } }],
+        [{ resize: { width: sizeObj.width, height: sizeObj.height } }],
         { compress: 0.9, format: ImageManipulator.SaveFormat.JPEG }
       );
       processedImageUri = manipResult.uri;
@@ -205,15 +221,12 @@ export async function generateImageToImage(sourceImageUri, style_preset, options
       console.warn("[deAPI Engine] Image resize failed, using original:", e);
     }
 
-    let uploadUri = processedImageUri;
-    if (Platform.OS === 'ios' && typeof uploadUri === 'string' && uploadUri.startsWith('/') && !uploadUri.startsWith('file://')) {
-      uploadUri = `file://${uploadUri}`;
-    }
+    const uploadUri = formatIosImageUri(processedImageUri);
 
     const formData = new FormData();
     formData.append('image', {
       uri: uploadUri,
-      name: 'uploaded.jpg',
+      name: 'source_image.jpg',
       type: 'image/jpeg',
     });
 
@@ -223,6 +236,8 @@ export async function generateImageToImage(sourceImageUri, style_preset, options
     formData.append('model', 'Flux_2_Klein_4B_BF16');
     formData.append('seed', Math.floor(Math.random() * 999999999).toString());
     formData.append('steps', '4');
+    formData.append('width', sizeObj.width.toString());
+    formData.append('height', sizeObj.height.toString());
 
     const response = await fetch(
       'https://api.deapi.ai/api/v2/images/edits',
@@ -311,11 +326,13 @@ export async function generateImageToImage(sourceImageUri, style_preset, options
       throw new Error("Could not parse image URL from deAPI response");
     }
 
-    clearTimeout(timeoutId);
     return resultUrl;
   } catch (error) {
-    console.error("[deAPI Engine] Execution pipeline failed:", error.message);
+    const errorDetails = error?.response?.data || error?.message || error;
+    console.error("[deAPI Engine] Execution pipeline failed:", errorDetails);
     throw error;
+  } finally {
+    clearTimeout(timeoutId);
   }
 }
 

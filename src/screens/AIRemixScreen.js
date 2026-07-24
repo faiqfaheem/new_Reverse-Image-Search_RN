@@ -32,59 +32,59 @@ const scale = SCREEN_WIDTH / 1080;
 
 // TODO: Fetch these templates dynamically from a backend or secure asset repository
 const STYLE_TEMPLATES = [
-  { 
-    id: 'monster-hunter', 
-    name: 'Monster Hunter', 
+  {
+    id: 'monster-hunter',
+    name: 'Monster Hunter',
     image: require('../components/tempelates/lucid-origin_Cinematic_medium_close-up_portrait_of_a_legendary_white-haired_monster_hunter_wa-0.jpg'),
-    style_preset: 'Cinematic medium close-up portrait of a legendary white-haired monster hunter warrior with a fully visible, weathered face, intense focused amber-gold eyes, stubble, and detailed skin textures. Wearing intricate dark studded leather armor plates, layered heavy fabrics, and silver steel sword hilts visible across his back. Standing in a gloomy medieval forest at dusk with atmospheric fog, glowing embers, and moody fantasy lighting. Epic cinematic lighting, highly detailed textures, photorealistic, 8k resolution, Unreal Engine 5 render, blockbuster dark fantasy movie aesthetic.' 
+    style_preset: 'Cinematic medium close-up portrait of a legendary white-haired monster hunter warrior with a fully visible, weathered face, intense focused amber-gold eyes, stubble, and detailed skin textures. Wearing intricate dark studded leather armor plates, layered heavy fabrics, and silver steel sword hilts visible across his back. Standing in a gloomy medieval forest at dusk with atmospheric fog, glowing embers, and moody fantasy lighting. Epic cinematic lighting, highly detailed textures, photorealistic, 8k resolution, Unreal Engine 5 render, blockbuster dark fantasy movie aesthetic.'
   },
-  { 
-    id: 'japanese-samurai', 
-    name: 'Japanese Samurai', 
+  {
+    id: 'japanese-samurai',
+    name: 'Japanese Samurai',
     image: require('../components/tempelates/lucid-origin_Cinematic_medium_shot_portrait_of_a_fearless_Japanese_samurai_warrior_with_a_ful-0.jpg'),
-    style_preset: 'Cinematic medium shot portrait of a fearless Japanese samurai warrior with a fully visible, determined facial expression, sharp features, traditional top-knot hairstyle, and subtle battle scars. Wearing intricate layered traditional samurai armor plating (yoroi) tied with silk cords, under-kimono fabric textures, and a traditional katana sword strapped at the waist. Standing in a atmospheric bamboo forest during a misty morning with soft fog and glowing sun rays filtering through the tall green stalks. Epic cinematic lighting, highly detailed textures, photorealistic, 8k resolution, Unreal Engine 5 render, blockbuster historical epic movie aesthetic.' 
+    style_preset: 'Cinematic medium shot portrait of a fearless Japanese samurai warrior with a fully visible, determined facial expression, sharp features, traditional top-knot hairstyle, and subtle battle scars. Wearing intricate layered traditional samurai armor plating (yoroi) tied with silk cords, under-kimono fabric textures, and a traditional katana sword strapped at the waist. Standing in a atmospheric bamboo forest during a misty morning with soft fog and glowing sun rays filtering through the tall green stalks. Epic cinematic lighting, highly detailed textures, photorealistic, 8k resolution, Unreal Engine 5 render, blockbuster historical epic movie aesthetic.'
   },
-  { 
-    id: 'historical-gladiator', 
-    name: 'Historical Gladiator', 
+  {
+    id: 'historical-gladiator',
+    name: 'Historical Gladiator',
     image: require('../components/tempelates/lucid-origin_Cinematic_medium_close-up_portrait_of_a_fierce_historical_gladiator_warrior_with-0.jpg'),
-    style_preset: 'Cinematic medium close-up portrait of a fierce historical gladiator warrior with a fully visible, weathered face, intense focused expression, short trimmed hair, and light dust and sweat textures on the skin. Wearing detailed metallic roman plate armor, leather straps, studded bracers, and a crimson cloth tunic. Standing inside a dusty ancient colosseum arena under the bright sun, holding an ornate gladius sword. Epic cinematic lighting, volumetric dust particles, dramatic shadows, photorealistic textures, 8k resolution, Unreal Engine 5 render, blockbuster historical epic movie aesthetic.' 
+    style_preset: 'Cinematic medium close-up portrait of a fierce historical gladiator warrior with a fully visible, weathered face, intense focused expression, short trimmed hair, and light dust and sweat textures on the skin. Wearing detailed metallic roman plate armor, leather straps, studded bracers, and a crimson cloth tunic. Standing inside a dusty ancient colosseum arena under the bright sun, holding an ornate gladius sword. Epic cinematic lighting, volumetric dust particles, dramatic shadows, photorealistic textures, 8k resolution, Unreal Engine 5 render, blockbuster historical epic movie aesthetic.'
   },
-  { 
-    id: 'pirate-captain', 
-    name: 'Pirate Captain', 
+  {
+    id: 'pirate-captain',
+    name: 'Pirate Captain',
     image: require('../components/tempelates/lucid-origin_Cinematic_medium_shot_portrait_of_an_eccentric_pirate_captain_with_a_fully_visib-0.jpg'),
-    style_preset: 'Cinematic medium shot portrait of an eccentric pirate captain with a fully visible, weathered face, braided dreadlocks, beads, and a classic weathered leather tricorn hat decorated with feathers. Wearing layered vintage pirate attire with distressed leather coats, linen shirts, and ornate belts. Standing on the wooden deck of an antique pirate ship during sunset, holding a vintage compass or flintlock pistol. Warm golden hour lighting, dramatic smoke, ocean waves in the background, photorealistic, 8k resolution, Unreal Engine 5 render, blockbuster adventure movie aesthetic.' 
+    style_preset: 'Cinematic medium shot portrait of an eccentric pirate captain with a fully visible, weathered face, braided dreadlocks, beads, and a classic weathered leather tricorn hat decorated with feathers. Wearing layered vintage pirate attire with distressed leather coats, linen shirts, and ornate belts. Standing on the wooden deck of an antique pirate ship during sunset, holding a vintage compass or flintlock pistol. Warm golden hour lighting, dramatic smoke, ocean waves in the background, photorealistic, 8k resolution, Unreal Engine 5 render, blockbuster adventure movie aesthetic.'
   },
-  { 
-    id: 'young-ninja', 
-    name: 'Young Ninja', 
+  {
+    id: 'young-ninja',
+    name: 'Young Ninja',
     image: require('../components/tempelates/lucid-origin_Dynamic_high-energy_close-up_anime_portrait_of_a_young_ninja_with_spiky_blonde_h-0.jpg'),
-    style_preset: 'Dynamic high-energy close-up anime portrait of a young ninja with spiky blonde hair, bright blue eyes, and three distinctive whisker-like whisker markings on each cheek. Wearing a high-collared orange and black combat uniform with a metal forehead protector headband featuring a spiral engraved symbol. Energetic swirling chakra aura effects around him, intense focused expression, vibrant cel-shaded coloring, clean crisp line art, studio masterpiece visual aesthetics, dynamic expressive lighting, 8k resolution, high-end animation render.' 
+    style_preset: 'Dynamic high-energy close-up anime portrait of a young ninja with spiky blonde hair, bright blue eyes, and three distinctive whisker-like whisker markings on each cheek. Wearing a high-collared orange and black combat uniform with a metal forehead protector headband featuring a spiral engraved symbol. Energetic swirling chakra aura effects around him, intense focused expression, vibrant cel-shaded coloring, clean crisp line art, studio masterpiece visual aesthetics, dynamic expressive lighting, 8k resolution, high-end animation render.'
   },
-  { 
-    id: 'professional-hitman', 
-    name: 'Professional Hitman', 
+  {
+    id: 'professional-hitman',
+    name: 'Professional Hitman',
     image: require('../components/tempelates/lucid-origin_Cinematic_medium_shot_portrait_of_a_professional_hitman_with_a_fully_visible_cle-0.jpg'),
-    style_preset: 'Cinematic medium shot portrait of a professional hitman with a fully visible, clean-shaved face, intense focused expression, and long dark slicked-back hair. Wearing a sharp, tailored black three-piece suit, crisp white dress shirt, and a black silk tie. Standing in a dimly lit rainy neon-lit alleyway or luxury hotel lobby at night, holding a sleek tactical firearm. Moody atmospheric smoke, dramatic rim lighting, reflection on wet pavement, photorealistic, 8k resolution, Unreal Engine 5 render, blockbuster action movie aesthetic.' 
+    style_preset: 'Cinematic medium shot portrait of a professional hitman with a fully visible, clean-shaved face, intense focused expression, and long dark slicked-back hair. Wearing a sharp, tailored black three-piece suit, crisp white dress shirt, and a black silk tie. Standing in a dimly lit rainy neon-lit alleyway or luxury hotel lobby at night, holding a sleek tactical firearm. Moody atmospheric smoke, dramatic rim lighting, reflection on wet pavement, photorealistic, 8k resolution, Unreal Engine 5 render, blockbuster action movie aesthetic.'
   },
-  { 
-    id: 'tech-savvy-hero', 
-    name: 'Tech-Savvy Hero', 
+  {
+    id: 'tech-savvy-hero',
+    name: 'Tech-Savvy Hero',
     image: require('../components/tempelates/lucid-origin_Cinematic_close-up_portrait_of_a_tech-savvy_hero_with_face_fully_visible_and_unc-0.jpg'),
-    style_preset: 'Cinematic close-up portrait of a tech-savvy hero with face fully visible and uncovered, wearing a high-tech crimson and gold metallic armor suit  Intricate mechanical panel lines, polished chrome alloy reflections, glowing cyan arc-reactor core on the chest casting vibrant light. Dark sci-fi workshop background, atmospheric haze, dramatic studio rim lighting, photorealistic textures, 8k resolution, Unreal Engine 5 render, blockbuster movie aesthetic.with a good hairstle' 
+    style_preset: 'Cinematic close-up portrait of a tech-savvy hero with face fully visible and uncovered, wearing a high-tech crimson and gold metallic armor suit  Intricate mechanical panel lines, polished chrome alloy reflections, glowing cyan arc-reactor core on the chest casting vibrant light. Dark sci-fi workshop background, atmospheric haze, dramatic studio rim lighting, photorealistic textures, 8k resolution, Unreal Engine 5 render, blockbuster movie aesthetic.with a good hairstle'
   },
-  { 
-    id: 'cybernetic-warrior', 
-    name: 'Cybernetic Warrior', 
+  {
+    id: 'cybernetic-warrior',
+    name: 'Cybernetic Warrior',
     image: require('../components/tempelates/lucid-origin_Cinematic_close-up_portrait_of_a_powerful_cybernetic_human_warrior_with_advanced-0.jpg'),
-    style_preset: 'Cinematic close-up portrait of a powerful cybernetic human warrior with advanced mechanical exoskeleton armor integrated into the body. Intricate metallic plating, glowing cybernetic blue neon optic eye, exposed high-tech electronic circuits, fiber-optic wires, and chrome alloy components. Dark sci-fi laboratory background with atmospheric smoke, dramatic cyan and orange rim lighting, hyper-realistic reflections, 8k resolution, Unreal Engine 5 render style, photorealistic blockbuster aesthetic.' 
+    style_preset: 'Cinematic close-up portrait of a powerful cybernetic human warrior with advanced mechanical exoskeleton armor integrated into the body. Intricate metallic plating, glowing cybernetic blue neon optic eye, exposed high-tech electronic circuits, fiber-optic wires, and chrome alloy components. Dark sci-fi laboratory background with atmospheric smoke, dramatic cyan and orange rim lighting, hyper-realistic reflections, 8k resolution, Unreal Engine 5 render style, photorealistic blockbuster aesthetic.'
   },
-  { 
-    id: 'superman-hero', 
-    name: 'Superman Hero', 
+  {
+    id: 'superman-hero',
+    name: 'Superman Hero',
     image: require('../components/tempelates/lucid-origin_Cinematic_close-up_portrait_of_Superman_flying_forward_with_powerful_momentum_he-0.jpg'),
-    style_preset: 'Cinematic close-up portrait of Superman flying forward with powerful momentum, heroic expression, dynamic heroic angle. Detailed blue and red superhero suit with textured fabric weave, iconic metallic \'S\' shield emblem on the chest with gold and red accents. Majestic red cape flowing dramatically in the wind behind him. Epic cinematic lighting, volumetric light rays, dramatic shadows, realistic textures, highly detailed, photorealistic, 8k resolution, Unreal Engine 5 render, sharp focus, blockbuster movie aesthetic.' 
+    style_preset: 'Cinematic close-up portrait of Superman flying forward with powerful momentum, heroic expression, dynamic heroic angle. Detailed blue and red superhero suit with textured fabric weave, iconic metallic \'S\' shield emblem on the chest with gold and red accents. Majestic red cape flowing dramatically in the wind behind him. Epic cinematic lighting, volumetric light rays, dramatic shadows, realistic textures, highly detailed, photorealistic, 8k resolution, Unreal Engine 5 render, sharp focus, blockbuster movie aesthetic.'
   }
 ];
 
@@ -97,7 +97,8 @@ export default function AIRemixScreen({ route, navigation }) {
   const [aspectRatio, setAspectRatio] = useState('1:1');
   const [remixStrength, setRemixStrength] = useState(0.38);
   const [selectedModelPrompt, setSelectedModelPrompt] = useState('');
-  const [remixedResult, setRemixedResult] = useState(null);
+  const [iterations, setIterations] = useState([]);
+  const [selectedIndex, setSelectedIndex] = useState(0);
   const [loading, setLoading] = useState(false);
   const [isFullScreen, setIsFullScreen] = useState(false);
 
@@ -109,12 +110,16 @@ export default function AIRemixScreen({ route, navigation }) {
 
 
 
+  const formatIosImageUri = (uri) => {
+    if (Platform.OS !== 'ios' || !uri) return uri;
+    // Ensure file:// scheme exists for iOS multi-part uploads
+    return uri.startsWith('file://') ? uri : `file://${uri}`;
+  };
+
   useEffect(() => {
     const passedUri = route?.params?.imageUri || route?.params?.sourceImageUri;
     if (passedUri) {
-      const validUri = Platform.OS === 'ios' && typeof passedUri === 'string' && passedUri.startsWith('/') && !passedUri.startsWith('file://')
-        ? `file://${passedUri}`
-        : passedUri;
+      const validUri = formatIosImageUri(passedUri);
       setSourceImageUri(validUri);
     }
   }, [route?.params]);
@@ -126,7 +131,8 @@ export default function AIRemixScreen({ route, navigation }) {
       setSourceImageUri(null);
       setCurrentPhase(1);
       setSelectedModel(null);
-      setRemixedResult(null);
+      setIterations([]);
+      setSelectedIndex(0);
       setSelectedModelPrompt('');
       setGenerationLimit(1);
       setRemixStrength(0.38);
@@ -204,9 +210,7 @@ export default function AIRemixScreen({ route, navigation }) {
 
       if (!result.canceled && result.assets?.[0]?.uri) {
         const rawUri = result.assets[0].uri;
-        const validUri = Platform.OS === 'ios' && typeof rawUri === 'string' && rawUri.startsWith('/') && !rawUri.startsWith('file://')
-          ? `file://${rawUri}`
-          : rawUri;
+        const validUri = formatIosImageUri(rawUri);
         setSourceImageUri(validUri);
         setCurrentPhase(3); // Jump straight to tuning
       } else {
@@ -220,352 +224,366 @@ export default function AIRemixScreen({ route, navigation }) {
     }
   };
 
+  const [loadingStage, setLoadingStage] = useState(0);
+
+  useEffect(() => {
+    if (!loading) {
+      setLoadingStage(0);
+      return;
+    }
+    const t1 = setTimeout(() => setLoadingStage(1), 2200);
+    const t2 = setTimeout(() => setLoadingStage(2), 5500);
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+    };
+  }, [loading]);
+
+  const handleGenerationSuccess = (newImagesArray) => {
+    setIterations((prevIterations) => {
+      const updatedList = [...prevIterations, ...newImagesArray];
+      setSelectedIndex(updatedList.length - 1);
+      return updatedList;
+    });
+  };
+
+  const currentRemixUri = iterations[selectedIndex] || null;
+
   const handleCreateRemix = async () => {
     if (!sourceImageUri) {
       Alert.alert('No Image Selected', 'Please go back and select a photo from your gallery.');
       return;
     }
-
     const usage = await checkUsageLimit('image_to_image', generationLimit);
     if (!usage.allowed) {
-      Alert.alert('Limit Reached', `Not enough credits! You need ${generationLimit} credits, but only have ${usage.remaining} left today.`);
+      Alert.alert('Limit Reached', `Not enough credits!`);
       return;
     }
-
     setLoading(true);
-
     try {
-      console.log(`[Remix] Starting Stability Style Remix using style "${selectedModel.name || selectedModel.id}"`);
-
-      const validSourceUri = Platform.OS === 'ios' && typeof sourceImageUri === 'string' && sourceImageUri.startsWith('/') && !sourceImageUri.startsWith('file://')
-        ? `file://${sourceImageUri}`
-        : sourceImageUri;
-
       abortControllerRef.current = new AbortController();
-
-      // Call the Stability AI Image-to-Image API
       const resultUrl = await generateImageToImage(
-        validSourceUri,
-        selectedModel.style_preset || selectedModel.id,
-        { signal: abortControllerRef.current.signal }
+        formatIosImageUri(sourceImageUri),
+        selectedModel?.style_preset || selectedModel?.id,
+        { aspectRatio, signal: abortControllerRef.current.signal }
       );
-
       await incrementUsage('image_to_image', generationLimit);
-
-      setRemixedResult(resultUrl);
+      handleGenerationSuccess([resultUrl]);
       setCurrentPhase(4);
-      showToast(`Successfully created ${selectedModel.name || selectedModel.id} remix!`);
+      showToast(`Successfully created ${selectedModel?.name || selectedModel?.id} remix!`);
     } catch (err) {
-      if (err.name === 'AbortError') {
-        console.log('[Remix] Generation aborted by user navigation');
-        return;
-      }
+      if (err.name === 'AbortError') return;
       console.error('[Remix] Generation error:', err);
-      Alert.alert(
-        'Generation Failed',
-        'An error occurred while generating. Please verify your internet connection and try again.'
-      );
+      Alert.alert('Generation Failed', 'An error occurred.');
     } finally {
       setLoading(false);
     }
   };
 
   const handleDownloadRemix = async () => {
-    if (!remixedResult) {
-      Alert.alert('Error', 'No remixed image available to download.');
-      return;
-    }
-
+    if (!currentRemixUri) return;
     const { status } = await MediaLibrary.requestPermissionsAsync();
-    if (status !== 'granted') {
-      Alert.alert(
-        'Permission Denied',
-        'Media Library permission is required to save photos directly to your device.'
-      );
-      return;
-    }
-
+    if (status !== 'granted') return;
     try {
       let tempUri = '';
-      if (remixedResult.startsWith('http://') || remixedResult.startsWith('https://')) {
-        const filename = `ai_remix_${Date.now()}.jpg`;
-        const localDest = `${FileSystem.documentDirectory}${filename}`;
-        const downloadResult = await FileSystem.downloadAsync(remixedResult, localDest);
-        tempUri = downloadResult.uri;
+      if (currentRemixUri.startsWith('http')) {
+        const download = await FileSystem.downloadAsync(currentRemixUri, `${FileSystem.documentDirectory}temp.jpg`);
+        tempUri = download.uri;
       } else {
-        const parts = remixedResult.split(';base64,');
-        const base64Data = parts.length === 2 ? parts[1] : remixedResult;
-        const filename = `ai_remix_${Date.now()}.jpg`;
-        tempUri = `${FileSystem.documentDirectory}${filename}`;
-        await FileSystem.writeAsStringAsync(tempUri, base64Data, {
-          encoding: 'base64',
-        });
+        tempUri = currentRemixUri;
       }
-
-      let assetCreated = false;
-      let galleryAssetId = null;
-      const albumName = 'AI Image Downloaded';
-
-      try {
-        const asset = await MediaLibrary.createAssetAsync(tempUri);
-        assetCreated = true;
-        galleryAssetId = asset.id;
-        const album = await MediaLibrary.getAlbumAsync(albumName);
-
-        if (album === null) {
-          await MediaLibrary.createAlbumAsync(albumName, asset, false);
-        } else {
-          await MediaLibrary.addAssetsToAlbumAsync([asset], album, false);
-        }
-      } catch (albumErr) {
-        console.warn('[Remix] Album saving failed, using direct library save fallback:', albumErr);
-        if (!assetCreated) {
-          await MediaLibrary.saveToLibraryAsync(tempUri);
-        }
-      }
-
-      // Add to internal saved downloads registry
-      const remixOriginalName = `ai_remix_${Date.now()}.jpg`;
-      await addSavedDownload(tempUri, galleryAssetId, true, remixOriginalName);
-
-      showToast('Image saved');
+      await MediaLibrary.saveToLibraryAsync(tempUri);
+      showToast('Image saved to gallery');
     } catch (err) {
-      console.error('[Remix] Persistence error:', err);
-      Alert.alert('Download Failed', `Could not save image: ${err.message || err}`);
+      Alert.alert('Download Failed', err.message);
     }
   };
 
   const handleHeaderBack = () => {
-    if (loading) return; // Strict UI Lock
-    if (currentPhase === 1) {
-      navigation?.goBack();
-    } else if (currentPhase === 2) {
-      setSelectedModel(null);
-      setCurrentPhase(1);
-    } else if (currentPhase === 3) {
-      setSourceImageUri(null);
-      setSelectedModel(null);
-      setCurrentPhase(1);
-    } else if (currentPhase === 4) {
-      setCurrentPhase(3);
-    }
+    if (loading) return;
+    if (currentPhase === 1) navigation?.goBack();
+    else if (currentPhase === 2) { setSelectedModel(null); setCurrentPhase(1); }
+    else if (currentPhase === 3) { setSourceImageUri(null); setSelectedModel(null); setCurrentPhase(1); }
+    else if (currentPhase === 4) setCurrentPhase(3);
   };
 
   const resetFlow = () => {
     setSelectedModel(null);
-    setSelectedModelPrompt('');
     setSourceImageUri(null);
-    setRemixedResult(null);
+    setIterations([]);
+    setSelectedIndex(0);
     setGenerationLimit(1);
-    setRemixStrength(0.38);
     setCurrentPhase(1);
   };
 
   const getHeaderTitle = () => {
     if (currentPhase === 1) return 'Custom AI Models';
-    if (currentPhase === 2) return selectedModel?.name || 'Create AI Images';
-    if (currentPhase === 3) return 'Chat With AI';
+    if (currentPhase === 3) return 'Custom AI Models';
+    if (currentPhase === 4) return 'Remix Result';
     return '';
   };
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="transparent" translucent={true} />
-
-      {/* Dynamic Header */}
+      <StatusBar barStyle="light-content" backgroundColor="#131313" translucent={false} />
       <View style={styles.header}>
-        <TouchableOpacity
-          style={[styles.backBtn, loading && { opacity: 0.5 }]}
-          onPress={loading ? null : handleHeaderBack}
-          disabled={loading}
-        >
+        <TouchableOpacity style={styles.backBtn} onPress={handleHeaderBack} disabled={loading}>
           <ArrowLeft size={24} color="#FFF" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle} numberOfLines={1}>{getHeaderTitle()}</Text>
-        {currentPhase === 4 ? (
-          <TouchableOpacity style={styles.headerSaveBtn} onPress={handleDownloadRemix}>
-            <Download size={14} color="#00285B" style={{ marginRight: 4 }} />
+        <Text style={styles.headerTitle}>{getHeaderTitle()}</Text>
+        {currentPhase === 4 && currentRemixUri ? (
+          <TouchableOpacity
+            style={[
+              styles.headerSaveBtn,
+              Platform.OS === 'ios' && {
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+              },
+            ]}
+            onPress={handleDownloadRemix}
+          >
+            {Platform.OS === 'ios' ? (
+              <Download
+                size={20}
+                color="#00285B"
+                style={{ width: 20, height: 20, marginRight: 4 }}
+              />
+            ) : (
+              <Image
+                source={require('../components/Container (1).png')}
+                style={{ width: 39.11 * scale, height: 54 * scale, marginRight: 4 }}
+                resizeMode="contain"
+              />
+            )}
             <Text style={styles.headerSaveText}>Save</Text>
           </TouchableOpacity>
-        ) : (
-          <View style={{ width: 24 }} />
-        )}
+        ) : <View style={{ width: 40 }} />}
       </View>
 
-      {/* SCREEN 1: Pure Model Selection Grid */}
       {currentPhase === 1 && (
-        <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
-
-
+        <ScrollView contentContainerStyle={styles.scrollContainer}>
           <View style={styles.gridContainer}>
-            {STYLE_TEMPLATES.map((style, idx) => (
-              <TouchableOpacity
-                key={style.id}
-                style={styles.styleCard}
-                activeOpacity={0.85}
-                onPress={() => handleSelectModel(style)}
-              >
-                {style.image ? (
-                  <Image source={style.image} style={styles.cardImage} resizeMode="cover" />
-                ) : (
-                  <View style={[styles.cardImage, { backgroundColor: '#FFFFFF', justifyContent: 'center', alignItems: 'center' }]}>
-                    <Text style={{ color: '#000', fontSize: 16, fontWeight: 'bold', textAlign: 'center' }}>{style.name}</Text>
-                  </View>
-                )}
+            {STYLE_TEMPLATES.map((style) => (
+              <TouchableOpacity key={style.id} style={styles.styleCard} onPress={() => handleSelectModel(style)}>
+                <Image source={style.image} style={styles.cardImage} />
               </TouchableOpacity>
             ))}
           </View>
         </ScrollView>
       )}
 
-      {/* SCREEN 3: Multi-Parameter Tuning Configuration (Limit & Strength) */}
-      {currentPhase === 3 && selectedModel && sourceImageUri && (
+      {currentPhase === 3 && sourceImageUri && (
         <View style={styles.phase3Container}>
-          <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>
-            {/* Top View Section: Image Preview with Grid */}
-            <View style={styles.phase3TopSection}>
-              <Image source={{ uri: sourceImageUri }} style={styles.phase3Image} />
-              {/* Grid Overlay */}
-              <View style={styles.gridOverlay}>
-                <View style={[styles.gridLineH, { top: '33.33%' }]} />
-                <View style={[styles.gridLineH, { top: '66.66%' }]} />
-                <View style={[styles.gridLineV, { left: '33.33%' }]} />
-                <View style={[styles.gridLineV, { left: '66.66%' }]} />
-              </View>
+          <ScrollView contentContainerStyle={{ padding: 16 }}>
+            <View
+              style={[
+                styles.selectedImageContainer,
+                Platform.OS === 'ios' && {
+                  width: '100%',
+                  height: 320,
+                  borderRadius: 16,
+                  overflow: 'hidden',
+                  backgroundColor: '#1E1E2A',
+                  alignSelf: 'center',
+                  marginVertical: 12,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                },
+              ]}
+            >
+              {sourceImageUri ? (
+                <Image
+                  source={{ uri: sourceImageUri }}
+                  style={[
+                    styles.phase3Image,
+                    Platform.OS === 'ios' && {
+                      width: '100%',
+                      height: '100%',
+                      resizeMode: 'cover',
+                    },
+                  ]}
+                  resizeMode={Platform.OS === 'ios' ? 'cover' : 'contain'}
+                />
+              ) : null}
             </View>
-
-            {/* Bottom View Section */}
-            <View style={styles.phase3BottomSection}>
-
-              {/* ASPECT RATIO */}
-              <Text style={styles.sectionTitle}>ASPECT RATIO</Text>
-              <View style={styles.ratioContainer}>
-                <View style={styles.ratioRow}>
-                  {['1:1', '4:3', '3:2', '2:3'].map(ratio => {
-                    const isActive = aspectRatio === ratio;
-                    return (
-                      <TouchableOpacity
-                        key={ratio}
-                        style={[styles.ratioBtn, isActive && styles.ratioBtnActive]}
-                        onPress={() => setAspectRatio(ratio)}
-                      >
-                        <View style={isActive ? styles.ratioPlaceholderActive : styles.ratioPlaceholder} />
-                        <Text style={[styles.ratioText, isActive && styles.ratioTextActive]}>{ratio}</Text>
-                      </TouchableOpacity>
-                    );
-                  })}
-                </View>
-                <View style={styles.ratioRow}>
-                  {['16:9', '9:16', '5:4', '4:5'].map(ratio => {
-                    const isActive = aspectRatio === ratio;
-                    return (
-                      <TouchableOpacity
-                        key={ratio}
-                        style={[styles.ratioBtn, isActive && styles.ratioBtnActive]}
-                        onPress={() => setAspectRatio(ratio)}
-                      >
-                        <View style={isActive ? styles.ratioPlaceholderActive : styles.ratioPlaceholder} />
-                        <Text style={[styles.ratioText, isActive && styles.ratioTextActive]}>{ratio}</Text>
-                      </TouchableOpacity>
-                    );
-                  })}
-                </View>
-              </View>
-
-              {/* QUANTITY */}
-              <Text style={styles.sectionTitle}>QUANTITY</Text>
-              <View style={styles.limitRow}>
-                {[1, 2, 3, 4].map(num => {
-                  const isActive = generationLimit === num;
+            {/* ASPECT RATIO SECTION */}
+            <Text style={styles.sectionTitle}>ASPECT RATIO</Text>
+            <View style={styles.ratioGridContainer}>
+              {/* Row 1 */}
+              <View style={styles.ratioRow}>
+                {['1:1', '4:3', '3:2', '2:3'].map((ratio) => {
+                  const isActive = aspectRatio === ratio;
                   return (
                     <TouchableOpacity
-                      key={num}
-                      style={[styles.quantityBtn, isActive && styles.quantityBtnActive]}
-                      onPress={() => setGenerationLimit(num)}
+                      key={ratio}
+                      onPress={() => setAspectRatio(ratio)}
+                      style={[styles.ratioPill, isActive && styles.ratioPillActive]}
+                      activeOpacity={0.7}
                     >
-                      <Text style={[styles.quantityText, isActive && styles.quantityTextActive]}>{num}</Text>
+                      <View style={[styles.ratioIconBox, isActive && styles.ratioIconBoxActive]} />
+                      <Text style={[styles.ratioPillText, isActive && styles.ratioPillTextActive]}>
+                        {ratio}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+
+              {/* Row 2 */}
+              <View style={styles.ratioRow}>
+                {['16:9', '9:16', '5:4', '4:5'].map((ratio) => {
+                  const isActive = aspectRatio === ratio;
+                  return (
+                    <TouchableOpacity
+                      key={ratio}
+                      onPress={() => setAspectRatio(ratio)}
+                      style={[styles.ratioPill, isActive && styles.ratioPillActive]}
+                      activeOpacity={0.7}
+                    >
+                      <View style={[styles.ratioIconBox, isActive && styles.ratioIconBoxActive]} />
+                      <Text style={[styles.ratioPillText, isActive && styles.ratioPillTextActive]}>
+                        {ratio}
+                      </Text>
                     </TouchableOpacity>
                   );
                 })}
               </View>
             </View>
-          </ScrollView>
 
-          {/* Absolute bottom-aligned execute button */}
-          <SafeAreaView style={styles.executeFooter}>
-            <TouchableOpacity style={styles.createBtn} onPress={loading ? null : handleCreateRemix} disabled={loading}>
-              <Text style={styles.createBtnText}>Create</Text>
-              <ArrowRight size={20} color="#00285B" style={styles.createBtnArrow} />
-            </TouchableOpacity>
-          </SafeAreaView>
+            {/* QUANTITY SECTION */}
+            <Text style={styles.sectionTitle}>QUANTITY</Text>
+            <View style={styles.quantityRow}>
+              {[1, 2, 3, 4].map((num) => {
+                const isActive = generationLimit === num;
+                return (
+                  <TouchableOpacity
+                    key={num}
+                    style={[styles.quantityPill, isActive && styles.quantityPillActive]}
+                    onPress={() => setGenerationLimit(num)}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={[styles.quantityPillText, isActive && styles.quantityPillTextActive]}>
+                      {num}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+          </ScrollView>
+          <TouchableOpacity style={styles.createBtn} onPress={handleCreateRemix} disabled={loading}>
+            <Text style={styles.createBtnText}>Create</Text>
+            <ArrowRight size={20} color="#00285B" style={{ marginLeft: 8 }} />
+          </TouchableOpacity>
         </View>
       )}
 
-      {/* SCREEN 4: Result Presentation, Full View Modal, & Scoped Saving */}
-      {currentPhase === 4 && remixedResult && (
+      {currentPhase === 4 && currentRemixUri && (
         <View style={styles.phase4Container}>
-          <ScrollView contentContainerStyle={styles.phase4ScrollContainer} showsVerticalScrollIndicator={false}>
-            {/* Main Result Image */}
-            <View style={styles.resultImageContainer}>
-              <Image source={{ uri: remixedResult }} style={styles.resultImage} />
-            </View>
-
-            {/* Variations Section */}
-            {generationLimit > 1 && (
-              <>
-                <View style={styles.variationsHeaderRow}>
-                  <Text style={styles.variationsTitle}>MORE VARIATIONS</Text>
-                  <Text style={styles.variationsCount}>{generationLimit} Iterations</Text>
-                </View>
-
-                <View style={styles.variationsGrid}>
-                  {Array.from({ length: generationLimit - 1 }).map((_, idx) => (
-                    <View key={idx} style={styles.variationBox}>
-                      <Image source={{ uri: remixedResult }} style={styles.variationImage} />
-                    </View>
-                  ))}
-                </View>
-              </>
+          <ScrollView contentContainerStyle={styles.phase4ScrollContainer}>
+            <TouchableOpacity
+              onPress={() => setIsFullScreen(true)}
+              style={[
+                styles.resultImageContainer,
+                Platform.OS === 'ios' && {
+                  width: '100%',
+                  aspectRatio: 1,
+                  borderRadius: 16,
+                  overflow: 'hidden',
+                  backgroundColor: '#1E1E2A',
+                  alignSelf: 'center',
+                  marginVertical: 12,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                },
+              ]}
+            >
+              <Image
+                source={{ uri: currentRemixUri }}
+                style={[
+                  styles.resultImage,
+                  Platform.OS === 'ios' && {
+                    width: '100%',
+                    height: '100%',
+                    resizeMode: 'cover',
+                  },
+                ]}
+                resizeMode={Platform.OS === 'ios' ? 'cover' : 'contain'}
+              />
+            </TouchableOpacity>
+            {iterations.length > 0 && (
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 20 }}>
+                {iterations.map((uri, index) => (
+                  <TouchableOpacity key={index} onPress={() => setSelectedIndex(index)} style={[styles.variationBox, selectedIndex === index && styles.variationThumbnailSelected]}>
+                    <Image source={{ uri }} style={styles.variationImage} />
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
             )}
           </ScrollView>
-
-          {/* Footer Button */}
-          <SafeAreaView style={styles.executeFooter}>
-            <TouchableOpacity style={styles.createBtn} onPress={async () => {
+          <TouchableOpacity
+            style={[
+              styles.createBtn,
+              Platform.OS === 'ios' && {
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+              },
+            ]}
+            onPress={async () => {
               const usage = await checkUsageLimit('image_to_image', 1);
               if (!usage.allowed) {
                 Alert.alert('Limit Reached', 'Not enough credits left today to generate more images.');
                 return;
               }
-              handleHeaderBack(); // this goes back to phase 3 to setup another run
-            }}>
-              <Text style={styles.createBtnText}>Generate More</Text>
-              <ArrowRight size={20} color="#00285B" style={styles.createBtnArrow} />
-            </TouchableOpacity>
-          </SafeAreaView>
+              handleCreateRemix();
+            }}
+            disabled={loading}
+          >
+            <Text style={styles.createBtnText}>Generate More</Text>
+            <ArrowRight
+              size={20}
+              color="#00285B"
+              style={[
+                styles.createBtnArrow,
+                Platform.OS === 'ios' && { width: 20, height: 20, marginLeft: 8 },
+              ]}
+            />
+          </TouchableOpacity>
         </View>
       )}
 
-      {/* Full Screen View Modal */}
-      <Modal visible={isFullScreen} transparent={false} animationType="fade">
+      <Modal visible={isFullScreen} transparent={false}>
         <SafeAreaView style={styles.modalContainer}>
-          <StatusBar barStyle="light-content" backgroundColor="#000" />
-          <TouchableOpacity style={styles.closeModalBtn} onPress={() => setIsFullScreen(false)}>
-            <X size={30} color="#FFF" />
-          </TouchableOpacity>
-          <Image source={{ uri: remixedResult }} style={styles.modalImage} resizeMode="contain" />
+          <TouchableOpacity style={styles.closeModalBtn} onPress={() => setIsFullScreen(false)}><X size={30} color="#FFF" /></TouchableOpacity>
+          {currentRemixUri && <Image source={{ uri: currentRemixUri }} style={styles.modalImage} resizeMode="contain" />}
         </SafeAreaView>
       </Modal>
 
-      {/* Spinner Loading Overlay Block */}
-      {loading && (
-        <View style={styles.loadingOverlay}>
-          <View style={styles.loadingBox}>
-            <ActivityIndicator size="large" color="#FF9500" />
-            <Text style={styles.loadingOverlayText}>Generating...</Text>
+      <Modal visible={loading} transparent={true}>
+        <View style={styles.modalLoadingOverlay}>
+          <View style={styles.loadingCard}>
+            <ActivityIndicator size="large" color="#ADC7FF" style={{ marginBottom: 16 }} />
+            <Text style={styles.loadingStageTitle}>
+              {loadingStage === 0 ? "Sending Request..." : loadingStage === 1 ? "Processing Image..." : "Finalizing Render..."}
+            </Text>
+            <Text style={styles.loadingStageSubtext}>
+              {loadingStage === 0
+                ? "Uploading source image & parameters..."
+                : loadingStage === 1
+                  ? "Synthesizing style remix via Vision-X models..."
+                  : "Applying high-res detail & finalizing output..."}
+            </Text>
+
+            {/* Step Progress Indicators */}
+            <View style={styles.stepDotsRow}>
+              <View style={[styles.stepDot, loadingStage >= 0 && styles.stepDotActive]} />
+              <View style={[styles.stepDot, loadingStage >= 1 && styles.stepDotActive]} />
+              <View style={[styles.stepDot, loadingStage >= 2 && styles.stepDotActive]} />
+            </View>
           </View>
         </View>
-      )}
+      </Modal>
 
 
 
@@ -678,10 +696,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 2,
   },
-  cardIndexText: {
-    color: '#FFF',
-    fontSize: 10,
-    fontWeight: 'bold',
+  selectedImageContainer: {
+    width: '100%',
+    height: 220,
+    borderRadius: 12,
+    overflow: 'hidden',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+    backgroundColor: '#1C1C26',
   },
   // Phase 2 Container
   phase2Container: {
@@ -1223,5 +1246,143 @@ const styles = StyleSheet.create({
   },
   actionIconBtn: {
     padding: 10,
+  },
+  modalLoadingOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.85)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+  },
+  loadingCard: {
+    width: '100%',
+    maxWidth: 320,
+    backgroundColor: '#1C1C26',
+    borderRadius: 24,
+    padding: 24,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#2A2A35',
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+  },
+  loadingStageTitle: {
+    color: '#FFF',
+    fontSize: 18,
+    fontFamily: 'Geist',
+    fontWeight: 'bold',
+    marginBottom: 6,
+    textAlign: 'center',
+  },
+  loadingStageSubtext: {
+    color: '#8B90A0',
+    fontSize: 13,
+    fontFamily: 'Geist',
+    textAlign: 'center',
+    marginBottom: 20,
+    lineHeight: 18,
+  },
+  stepDotsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  ratioGridContainer: {
+    gap: 10,
+    marginBottom: 8,
+  },
+  ratioRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 8,
+  },
+  ratioPill: {
+    flex: 1,
+    height: 48,
+    backgroundColor: '#1C1C26',
+    borderRadius: 24,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#2A2A35',
+  },
+  ratioPillActive: {
+    backgroundColor: '#ADC7FF',
+    borderColor: '#ADC7FF',
+  },
+  ratioIconBox: {
+    width: 12,
+    height: 12,
+    borderRadius: 2,
+    borderWidth: 1.5,
+    borderColor: '#8E8E93',
+    marginRight: 6,
+  },
+  ratioIconBoxActive: {
+    borderColor: '#00285B',
+    backgroundColor: 'transparent',
+  },
+  ratioPillText: {
+    color: '#8E8E93',
+    fontSize: 13,
+    fontWeight: 'bold',
+  },
+  ratioPillTextActive: {
+    color: '#00285B',
+    fontWeight: 'bold',
+  },
+  quantityRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 10,
+    marginBottom: 24,
+  },
+  quantityPill: {
+    flex: 1,
+    height: 48,
+    backgroundColor: '#1C1C26',
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#2A2A35',
+  },
+  quantityPillActive: {
+    backgroundColor: '#ADC7FF',
+    borderColor: '#ADC7FF',
+  },
+  quantityPillText: {
+    color: '#8E8E93',
+    fontSize: 15,
+    fontWeight: 'bold',
+  },
+  quantityPillTextActive: {
+    color: '#00285B',
+    fontWeight: 'bold',
+  },
+  createBtn: {
+    width: '100%',
+    height: 56,
+    backgroundColor: '#ADC7FF',
+    borderRadius: 28,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 16,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+  },
+  createBtnText: {
+    color: '#00285B',
+    fontSize: 17,
+    fontWeight: 'bold',
   },
 });

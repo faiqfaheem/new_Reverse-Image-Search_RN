@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import * as FileSystem from 'expo-file-system/legacy';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const PremiumContext = createContext(null);
 
@@ -25,18 +26,30 @@ export function PremiumProvider({ children }) {
           setIsPremiumUser(true);
         }
 
-        // Check onboarding completion status
-        let onboardingFileExists = false;
+        // Check onboarding completion status via AsyncStorage (primary) and FileSystem (fallback)
+        let isCompleted = false;
         try {
-          const onboardingInfo = await FileSystem.getInfoAsync(ONBOARDING_FILE_PATH);
-          onboardingFileExists = onboardingInfo.exists;
-        } catch (e) {}
+          const hasCompletedVal = await AsyncStorage.getItem('hasCompletedOnboarding');
+          if (hasCompletedVal === 'true') {
+            isCompleted = true;
+          } else {
+            const onboardingInfo = await FileSystem.getInfoAsync(ONBOARDING_FILE_PATH);
+            isCompleted = onboardingInfo.exists;
+          }
+        } catch (e) {
+          try {
+            const onboardingInfo = await FileSystem.getInfoAsync(ONBOARDING_FILE_PATH);
+            isCompleted = onboardingInfo.exists;
+          } catch (_) {}
+        }
 
-        if (onboardingFileExists) {
+        if (isCompleted) {
           setIsOnboardingComplete(true);
+        } else {
+          setIsOnboardingComplete(false);
         }
       } catch (error) {
-        console.warn('Error loading premium or onboarding status via FileSystem:', error);
+        console.warn('Error loading premium or onboarding status:', error);
       } finally {
         setIsLoading(false);
       }
@@ -47,6 +60,7 @@ export function PremiumProvider({ children }) {
 
   const flagOnboardingComplete = async () => {
     try {
+      await AsyncStorage.setItem('hasCompletedOnboarding', 'true');
       await FileSystem.writeAsStringAsync(ONBOARDING_FILE_PATH, JSON.stringify({ completed: true }));
       setIsOnboardingComplete(true);
     } catch (error) {
@@ -73,6 +87,7 @@ export function PremiumProvider({ children }) {
 
   const resetOnboarding = async () => {
     try {
+      await AsyncStorage.removeItem('hasCompletedOnboarding');
       await FileSystem.deleteAsync(ONBOARDING_FILE_PATH, { idempotent: true });
       setIsOnboardingComplete(false);
     } catch (error) {
