@@ -309,14 +309,7 @@ export default function AIImageResultScreen({ route, navigation }) {
         <TouchableOpacity
           style={[
             styles.mainPreviewContainer,
-            Platform.OS === 'ios' && {
-              width: '100%',
-              aspectRatio: 1,
-              borderRadius: 16,
-              overflow: 'hidden',
-              backgroundColor: '#1E1E2A',
-              alignSelf: 'center',
-            },
+            { aspectRatio: ratioNumber },
           ]}
           activeOpacity={0.9}
           onPress={() => {
@@ -330,15 +323,8 @@ export default function AIImageResultScreen({ route, navigation }) {
           ) : currentImageUri ? (
             <Image
               source={{ uri: currentImageUri }}
-              style={[
-                styles.mainPreviewImage,
-                Platform.OS === 'ios' && {
-                  width: '100%',
-                  height: '100%',
-                  resizeMode: 'cover',
-                },
-              ]}
-              resizeMode={Platform.OS === 'ios' ? 'cover' : 'contain'}
+              style={styles.mainPreviewImage}
+              resizeMode="cover"
             />
           ) : (
             <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
@@ -530,25 +516,24 @@ const styles = StyleSheet.create({
     marginLeft: 6,
   },
   scrollContent: {
-    padding: 20,
+    paddingHorizontal: 16,
+    paddingTop: 16,
     paddingBottom: 200,
   },
   mainPreviewContainer: {
-    width: 689.62 * scale,
-    height: 862.02 * scale,
+    width: '100%',
     backgroundColor: '#1C1C26',
-    borderRadius: 50.27 * scale,
+    borderRadius: 16,
     overflow: 'hidden',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 24,
-    borderWidth: 1,
-    borderColor: '#2A2A35',
+    borderWidth: 0,
     alignSelf: 'center',
   },
   mainPreviewImage: {
-    width: Platform.OS === 'ios' ? Math.round(689.62 * scale) : '100%',
-    height: Platform.OS === 'ios' ? Math.round(862.02 * scale) : '100%',
+    width: '100%',
+    height: '100%',
     resizeMode: 'cover',
   },
   errorText: {

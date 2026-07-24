@@ -483,7 +483,7 @@ export default function HomeScreen({ route, onSearch, navigation }) {
                   ))}
 
                   {/* Corner Styling */}
-                  {[{ top: -3, left: -3, borderLeftWidth: 4, borderTopWidth: 4 }, { top: -3, right: -3, borderRightWidth: 4, borderTopWidth: 4 }, { bottom: -3, left: -3, borderLeftWidth: 4, borderBottomWidth: 4 }, { bottom: -3, right: -3, borderRightWidth: 4, borderBottomWidth: 4 }].map((s, i) => (
+                  {[{ top: -2, left: -2, borderLeftWidth: 2.5, borderTopWidth: 2.5 }, { top: -2, right: -2, borderRightWidth: 2.5, borderTopWidth: 2.5 }, { bottom: -2, left: -2, borderLeftWidth: 2.5, borderBottomWidth: 2.5 }, { bottom: -2, right: -2, borderRightWidth: 2.5, borderBottomWidth: 2.5 }].map((s, i) => (
                     <View key={i} style={[styles.cornerBorder, s]} />
                   ))}
 
@@ -1265,13 +1265,13 @@ const styles = StyleSheet.create({
     overflow: 'visible',
   },
   editorImage: { width: '100%', height: '100%' },
-  cropOverlayContainer: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0, 0, 0, 0.4)' },
-  cropBox: { position: 'absolute', borderWidth: 2, borderColor: '#FFF', backgroundColor: 'transparent' },
-  gridLine: { position: 'absolute', backgroundColor: 'rgba(255, 255, 255, 0.3)' },
-  cornerBorder: { position: 'absolute', width: 20, height: 20, borderColor: '#FFF' },
+  cropOverlayContainer: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0, 0, 0, 0.5)' },
+  cropBox: { position: 'absolute', borderWidth: 1, borderColor: '#FFFFFF', backgroundColor: 'transparent' },
+  gridLine: { position: 'absolute', backgroundColor: 'rgba(255, 255, 255, 0.2)' },
+  cornerBorder: { position: 'absolute', width: 14, height: 14, borderColor: '#FFFFFF' },
   touchHandle: { position: 'absolute', zIndex: 100 },
-  touchHandleCorner: { width: 36, height: 36, backgroundColor: 'rgba(255, 255, 255, 0.35)', borderRadius: 18, borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.8)' },
-  touchHandleEdge: { backgroundColor: 'rgba(255, 255, 255, 0.25)', borderRadius: 8, borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.5)' },
+  touchHandleCorner: { width: 36, height: 36, backgroundColor: 'transparent' },
+  touchHandleEdge: { backgroundColor: 'transparent' },
   cropActionContainer: { flexDirection: 'row', justifyContent: 'space-around', paddingVertical: 12, backgroundColor: '#000' },
   cropActionBtnCancel: { paddingVertical: 8, paddingHorizontal: 20, borderRadius: 20, borderWidth: 1, borderColor: '#444' },
   cropActionTextCancel: { color: '#FFF', fontSize: 14 },

@@ -308,13 +308,13 @@ export default function ResultScreen({ searchQuery: propSearchQuery, imageUri: p
           : `${FileSystem.documentDirectory}/`;
         const dynamicPath = `${docDir}history_images/${filename}`;
         const formattedPath = dynamicPath.startsWith('file://') ? dynamicPath : `file://${dynamicPath}`;
-        
+
         try {
           const fileInfo = await FileSystem.getInfoAsync(formattedPath);
           if (fileInfo.exists) {
             targetUri = formattedPath;
           }
-        } catch (_) {}
+        } catch (_) { }
       }
 
       // Universal Image Normalizer: converts content://, file://, ph:// URIs into clean normalized JPEG Base64 & URI
@@ -794,14 +794,14 @@ export default function ResultScreen({ searchQuery: propSearchQuery, imageUri: p
                   setDetectedImageUrl(null);
                 }}
               >
-                <Download size={18} color="#FFF" style={{ marginRight: 6 }} />
+                <Download size={18} color="#131313" style={{ marginRight: 6 }} />
                 <Text style={styles.saveOverlayText}>Save Image</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.saveOverlayClose}
                 onPress={() => setDetectedImageUrl(null)}
               >
-                <X size={18} color="#666" />
+                <X size={18} color="#131313" />
               </TouchableOpacity>
             </View>
           </View>
@@ -812,12 +812,12 @@ export default function ResultScreen({ searchQuery: propSearchQuery, imageUri: p
         styles.bottomTabBar,
         Platform.OS === 'ios'
           ? {
-              bottom: 0,
-              height: (166 * scale) + Math.max(insets.bottom, 0),
-              paddingBottom: Math.max(insets.bottom, 0),
-              paddingTop: 8,
-              backgroundColor: '#1E1E1E',
-            }
+            bottom: 0,
+            height: (166 * scale) + Math.max(insets.bottom, 0),
+            paddingBottom: Math.max(insets.bottom, 0),
+            paddingTop: 8,
+            backgroundColor: '#1E1E1E',
+          }
           : { bottom: Math.max(insets.bottom, 0) }
       ]}>
         <Image
@@ -880,17 +880,19 @@ export default function ResultScreen({ searchQuery: propSearchQuery, imageUri: p
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#000' },
   headerContainer: {
-    height: Platform.OS === 'android' ? 56 + (StatusBar.currentHeight || 0) : 56,
-    paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 0) : 0,
+    height: Platform.OS === 'android' ? 38 + (StatusBar.currentHeight || 0) : 38,
+    paddingTop: Platform.OS === 'android' ? Math.max((StatusBar.currentHeight || 0) - 16, 0) : 0,
+    paddingBottom: 2,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
+    paddingHorizontal: 5,
     backgroundColor: '#000000',
   },
   backButton: {
     padding: 4,
     justifyContent: 'center',
     alignItems: 'center',
+    marginTop: -14,
   },
   headerTitle: {
     color: '#FFFFFF',
@@ -898,6 +900,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     fontSize: 20,
     marginLeft: 12,
+    marginTop: -14,
   },
 
 
@@ -993,7 +996,7 @@ const styles = StyleSheet.create({
     bottom: 16,
     left: 16,
     right: 16,
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    backgroundColor: '#191919',
     borderRadius: 12,
     paddingVertical: 12,
     paddingHorizontal: 16,
@@ -1010,7 +1013,7 @@ const styles = StyleSheet.create({
   },
   saveOverlayTitle: {
     fontSize: 14,
-    color: '#3C4043',
+    color: '#FFFFFF',
     fontWeight: '500',
     maxWidth: '45%',
   },
@@ -1021,20 +1024,20 @@ const styles = StyleSheet.create({
   saveOverlayButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1A73E8',
+    backgroundColor: '#ADC7FF',
     paddingVertical: 8,
     paddingHorizontal: 16,
     borderRadius: 20,
     marginRight: 8,
   },
   saveOverlayText: {
-    color: '#FFF',
+    color: '#131313',
     fontWeight: 'bold',
     fontSize: 13,
   },
   saveOverlayClose: {
     padding: 8,
-    backgroundColor: '#F1F3F4',
+    backgroundColor: '#ADC7FF',
     borderRadius: 20,
   },
   toastContainer: {

@@ -26,6 +26,11 @@
     "android": {
       "package": "com.yourname.reverseimagesearchapp",
       "jsEngine": "hermes",
+      "splash": {
+        "backgroundColor": "#131313",
+        "resizeMode": "contain",
+        "image": "./assets/splash.png"
+      },
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#131313"
