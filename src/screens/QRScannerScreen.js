@@ -13,6 +13,7 @@ import {
   StatusBar,
   ActivityIndicator,
   Platform,
+  BackHandler,
 } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { ArrowLeft, Copy, Check, RefreshCw, AlertCircle, Camera } from 'lucide-react-native';
@@ -26,6 +27,25 @@ export default function QRScannerScreen({ navigation }) {
   const [scanned, setScanned] = useState(false);
   const [scanResult, setScanResult] = useState('');
   const [copied, setCopied] = useState(false);
+
+  // Hardware Back Handler
+  useEffect(() => {
+    const onBackPress = () => {
+      if (scanned) {
+        setScanned(false);
+        setScanResult('');
+        return true;
+      }
+      if (navigation?.canGoBack()) {
+        navigation.goBack();
+      } else {
+        navigation.navigate('Home');
+      }
+      return true;
+    };
+    const sub = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+    return () => sub.remove();
+  }, [scanned, navigation]);
 
   // Animated laser line
   const laserAnim = useRef(new Animated.Value(0)).current;

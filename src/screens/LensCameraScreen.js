@@ -9,7 +9,9 @@ import {
   StatusBar,
   ActivityIndicator,
   Platform,
+  BackHandler,
 } from 'react-native';
+import { useEffect } from 'react';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { ArrowLeft, Camera, Image as ImageIcon } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
@@ -21,6 +23,19 @@ export default function LensCameraScreen({ navigation }) {
   const [permission, requestPermission] = useCameraPermissions();
   const [isCapturing, setIsCapturing] = useState(false);
   const cameraRef = useRef(null);
+
+  useEffect(() => {
+    const onBackPress = () => {
+      if (navigation?.canGoBack()) {
+        navigation.goBack();
+      } else {
+        navigation.navigate('Home');
+      }
+      return true;
+    };
+    const sub = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+    return () => sub.remove();
+  }, [navigation]);
 
   if (!permission) {
     return (
