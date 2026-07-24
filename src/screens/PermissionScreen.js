@@ -18,7 +18,8 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import PermissionLogo from '../components/PermissionLogo';
 import { Check, X } from 'lucide-react-native';
 import { Camera } from 'expo-camera';
-import * as Notifications from 'expo-notifications';
+// TODO: Re-enable when adding notification features
+// import * as Notifications from 'expo-notifications';
 import * as ImagePicker from 'expo-image-picker';
 import * as MediaLibrary from 'expo-media-library';
 import { ExpoSpeechRecognitionModule } from 'expo-speech-recognition';
@@ -66,7 +67,7 @@ export default function PermissionScreen({ onPermissionsGranted, navigation }) {
   const [permissions, setPermissions] = useState({
     camera: null,
     media: null,
-    notifications: null,
+    // notifications: null, // TODO: Re-enable when adding notification features
     microphone: null,
   });
 
@@ -84,13 +85,14 @@ export default function PermissionScreen({ onPermissionsGranted, navigation }) {
         canAskAgain: true
       };
 
-      const notificationsStatus = await Notifications.getPermissionsAsync();
+      // TODO: Re-enable when adding notification features
+      // const notificationsStatus = await Notifications.getPermissionsAsync();
       const microphoneStatus = { granted: true, status: 'granted' }; // Automatically granted
 
       return {
         camera: cameraStatus,
         media: mediaStatusCombined,
-        notifications: notificationsStatus,
+        // notifications: notificationsStatus, // TODO: Re-enable
         microphone: microphoneStatus,
       };
     } catch (error) {
@@ -98,7 +100,7 @@ export default function PermissionScreen({ onPermissionsGranted, navigation }) {
       return {
         camera: { granted: false, status: 'undetermined' },
         media: { granted: false, status: 'undetermined' },
-        notifications: { granted: false, status: 'undetermined' },
+        // notifications: { granted: false, status: 'undetermined' }, // TODO: Re-enable
         microphone: { granted: true, status: 'granted' },
       };
     }
@@ -112,7 +114,7 @@ export default function PermissionScreen({ onPermissionsGranted, navigation }) {
     const allGranted = Boolean(
       isGranted(status.camera) &&
       isGranted(status.media) &&
-      isGranted(status.notifications) &&
+      // isGranted(status.notifications) && // TODO: Re-enable when adding notification features
       isGranted(status.microphone)
     );
 
@@ -217,26 +219,27 @@ export default function PermissionScreen({ onPermissionsGranted, navigation }) {
     }
   };
 
-  const handleRequestNotifications = async () => {
-    if (busy) return;
-    setBusy(true);
-    try {
-      const res = await Notifications.requestPermissionsAsync({
-        ios: {
-          allowAlert: true,
-          allowBadge: true,
-          allowSound: true,
-        },
-      });
-      setPermissions((prev) => ({ ...prev, notifications: res }));
-      return res;
-    } catch (error) {
-      console.error('Failed to request Notifications permission:', error);
-      Alert.alert('Permission Error', 'Failed to request notification permission.');
-    } finally {
-      setBusy(false);
-    }
-  };
+  // TODO: Re-enable when adding notification features
+  // const handleRequestNotifications = async () => {
+  //   if (busy) return;
+  //   setBusy(true);
+  //   try {
+  //     const res = await Notifications.requestPermissionsAsync({
+  //       ios: {
+  //         allowAlert: true,
+  //         allowBadge: true,
+  //         allowSound: true,
+  //       },
+  //     });
+  //     setPermissions((prev) => ({ ...prev, notifications: res }));
+  //     return res;
+  //   } catch (error) {
+  //     console.error('Failed to request Notifications permission:', error);
+  //     Alert.alert('Permission Error', 'Failed to request notification permission.');
+  //   } finally {
+  //     setBusy(false);
+  //   }
+  // };
 
   const handleRequestMicrophone = async () => {
     if (busy) return;
@@ -297,13 +300,14 @@ export default function PermissionScreen({ onPermissionsGranted, navigation }) {
       request: handleRequestCamera,
       settingsLabel: 'CAMERA',
     },
-    {
-      key: 'notifications',
-      title: 'Notification Permission',
-      status: permissions.notifications,
-      request: handleRequestNotifications,
-      settingsLabel: 'NOTIFICATIONS',
-    },
+    // TODO: Re-enable when adding notification features
+    // {
+    //   key: 'notifications',
+    //   title: 'Notification Permission',
+    //   status: permissions.notifications,
+    //   request: handleRequestNotifications,
+    //   settingsLabel: 'NOTIFICATIONS',
+    // },
   ];
 
   const handlePermissionRequest = async (item) => {
