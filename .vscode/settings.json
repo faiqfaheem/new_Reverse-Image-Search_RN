@@ -1,11 +1,4 @@
 {
-  "java.import.exclusions": [
-    "**/node_modules/**",
-    "**/.metadata/**",
-    "**/archetype/**",
-    "**/META-INF/maven/**"
-  ],
-  "java.project.importHint": "whenNeeded",
-  "java.compile.nullAnalysis.mode": "disabled",
-  "java.configuration.updateBuildConfiguration": "interactive"
+  "python.defaultInterpreterPath": "d:\\reverse-image-search-app\\venv\\Scripts\\python.exe",
+  "python.terminal.activateEnvironment": true
 }

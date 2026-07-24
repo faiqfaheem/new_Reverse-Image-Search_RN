@@ -6,4 +6,6 @@ node_modules
 .env.production
 .expo/
 dist/
+__pycache__/
+venv/
 
