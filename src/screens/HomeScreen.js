@@ -216,8 +216,9 @@ export default function HomeScreen({ route, onSearch, navigation }) {
         return true;
       }
 
-      // 5. On Explore Home screen -> default system exit
-      return false;
+      // 5. On Explore Home screen -> exit app cleanly
+      BackHandler.exitApp();
+      return true;
     };
 
     const backSubscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
