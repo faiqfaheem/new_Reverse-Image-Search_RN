@@ -198,17 +198,27 @@ export default function AIImageResultScreen({ route, navigation }) {
   const runGenerations = async () => {
     setGlobalLoading(true);
     try {
-      const controller = new AbortController();
-      const reqId = Date.now().toString();
-      abortControllersRef.current[reqId] = controller;
-      const base64Uri = await generateAIImage(currentPrompt, {
-        aspectRatio,
-        negativePrompt,
-        style_preset,
-        signal: controller.signal
+      // Run imageCount generations in parallel
+      const promises = Array.from({ length: imageCount }, (_, i) => {
+        const controller = new AbortController();
+        const reqId = `${Date.now()}_${i}`;
+        abortControllersRef.current[reqId] = controller;
+        return generateAIImage(currentPrompt, {
+          aspectRatio,
+          negativePrompt,
+          style_preset,
+          signal: controller.signal
+        });
       });
+
+      const results = await Promise.all(promises);
       if (!isMounted.current) return;
-      handleGenerationSuccess([base64Uri]);
+
+      // Filter out any null/empty results
+      const validResults = results.filter(Boolean);
+      if (validResults.length > 0) {
+        handleGenerationSuccess(validResults);
+      }
       setGlobalLoading(false);
     } catch (err) {
       if (!isMounted.current || err.name === 'AbortError') return;
