@@ -23,6 +23,7 @@ import { Camera } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
 import * as MediaLibrary from 'expo-media-library';
 import { ExpoSpeechRecognitionModule } from 'expo-speech-recognition';
+import { usePremium } from '../context/PremiumContext';
 
 // Native Android Storage/Media Permission Helpers
 export const checkNativeStoragePermission = async () => {
@@ -62,6 +63,7 @@ export const requestNativeStoragePermission = async () => {
 
 export default function PermissionScreen({ onPermissionsGranted, navigation }) {
   const insets = useSafeAreaInsets();
+  const { isOnboardingComplete } = usePremium();
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [permissions, setPermissions] = useState({
@@ -121,7 +123,7 @@ export default function PermissionScreen({ onPermissionsGranted, navigation }) {
     if (allGranted && shouldNavigate) {
       onPermissionsGranted();
       if (navigation) {
-        navigation.replace('Onboarding');
+        navigation.replace(isOnboardingComplete ? 'Home' : 'Onboarding');
       }
     }
   };
@@ -325,6 +327,9 @@ export default function PermissionScreen({ onPermissionsGranted, navigation }) {
   const handleActionButtonPress = async () => {
     if (!nextRequired) {
       onPermissionsGranted();
+      if (navigation) {
+        navigation.replace(isOnboardingComplete ? 'Home' : 'Onboarding');
+      }
       return;
     }
 

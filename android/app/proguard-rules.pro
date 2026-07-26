@@ -11,4 +11,18 @@
 -keep class com.swmansion.reanimated.** { *; }
 -keep class com.facebook.react.turbomodule.** { *; }
 
-# Add any project specific keep options here:
+# Expo modules (ImagePicker, Camera, MediaLibrary, FileSystem)
+-keep class expo.modules.imagepicker.** { *; }
+-keep class expo.modules.camera.** { *; }
+-keep class expo.modules.medialibrary.** { *; }
+-keep class expo.modules.filesystem.** { *; }
+-keep class expo.modules.core.** { *; }
+-keep class expo.modules.kotlin.** { *; }
+
+# Preserve drawable assets & raw resources for image templates
+-keepclassmembers class **.R$* {
+    public static <fields>;
+}
+-keep class **.R$* { *; }
+
+

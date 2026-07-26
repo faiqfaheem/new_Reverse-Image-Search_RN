@@ -204,7 +204,7 @@ function AppDrawerInner({ isOpen, onClose, navigation }) {
               ]}
             >
               <Image
-                source={Platform.OS === 'ios' ? Image.resolveAssetSource(require('./group_110.png')) : require('./Group 110.png')}
+                source={require('./Group 110.png')}
                 style={styles.drawerHeaderLogo}
                 resizeMode="contain"
               />
@@ -229,7 +229,7 @@ function AppDrawerInner({ isOpen, onClose, navigation }) {
 
               <TouchableOpacity style={styles.drawerMenuItem} onPress={() => { handleClose(); navigation.navigate('Home', { triggerAction: 'gallery', timestamp: Date.now() }); }}>
                 <View style={styles.menuIconSlot}>
-                  <SvgXml xml={galleryXml} width={47 * scale} height={47 * scale} />
+                  <ImageIcon size={22} color="#FFF" />
                 </View>
                 <Text style={styles.drawerMenuText}>Gallery</Text>
               </TouchableOpacity>
@@ -237,7 +237,7 @@ function AppDrawerInner({ isOpen, onClose, navigation }) {
               <TouchableOpacity style={styles.drawerMenuItem} onPress={() => { handleClose(); navigation.navigate('QRScanner'); }}>
                 <View style={styles.menuIconSlot}>
                   <Image
-                    source={Platform.OS === 'ios' ? Image.resolveAssetSource(require('./group_215.png')) : require('./Group 215.png')}
+                    source={require('./Group 215.png')}
                     style={styles.menuPngIcon}
                     resizeMode="contain"
                   />
@@ -248,7 +248,7 @@ function AppDrawerInner({ isOpen, onClose, navigation }) {
               <TouchableOpacity style={styles.drawerMenuItem} onPress={() => { handleClose(); navigation.navigate('Downloads'); }}>
                 <View style={styles.menuIconSlot}>
                   <Image
-                    source={Platform.OS === 'ios' ? Image.resolveAssetSource(require('./drawer_dwnld.png')) : require('./drawer dwnld.png')}
+                    source={require('./drawer dwnld.png')}
                     style={styles.menuPngIcon}
                     resizeMode="contain"
                   />
@@ -259,7 +259,7 @@ function AppDrawerInner({ isOpen, onClose, navigation }) {
               <TouchableOpacity style={styles.drawerMenuItem} onPress={() => { handleClose(); navigation.navigate('Home', { tab: 'generate_ai', timestamp: Date.now() }); }}>
                 <View style={styles.menuIconSlot}>
                   <Image
-                    source={Platform.OS === 'ios' ? Image.resolveAssetSource(require('./mingcute_ai-fill.png')) : require('./mingcute_ai-fill.png')}
+                    source={require('./mingcute_ai-fill.png')}
                     style={styles.menuPngIcon}
                     resizeMode="contain"
                   />
@@ -280,7 +280,7 @@ function AppDrawerInner({ isOpen, onClose, navigation }) {
               <TouchableOpacity style={styles.drawerMenuItem} onPress={() => { setSelectedRating(0); setIsRateModalVisible(true); }}>
                 <View style={styles.menuIconSlot}>
                   <Image
-                    source={Platform.OS === 'ios' ? Image.resolveAssetSource(require('./vector_6.png')) : require('./Vector (6).png')}
+                    source={require('./Vector (6).png')}
                     style={styles.menuPngIconRateUs}
                     resizeMode="contain"
                   />
@@ -294,7 +294,7 @@ function AppDrawerInner({ isOpen, onClose, navigation }) {
               <TouchableOpacity style={styles.drawerMenuItem} onPress={() => { setIsPrivacyVisible(true); }}>
                 <View style={styles.menuIconSlot}>
                   <Image
-                    source={Platform.OS === 'ios' ? Image.resolveAssetSource(require('./vector_7.png')) : require('./Vector (7).png')}
+                    source={require('./Vector (7).png')}
                     style={styles.menuPngIcon}
                     resizeMode="contain"
                   />
@@ -316,12 +316,12 @@ function AppDrawerInner({ isOpen, onClose, navigation }) {
               onPress={handleClose}
             >
               <Image
-                source={Platform.OS === 'ios' ? Image.resolveAssetSource(require('./ellipse_6483.png')) : require('./Ellipse 6483.png')}
+                source={require('./Ellipse 6483.png')}
                 style={styles.ellipseImage}
                 resizeMode="contain"
               />
               <Image
-                source={Platform.OS === 'ios' ? Image.resolveAssetSource(require('./drawer_bacl.png')) : require('./drawer bacl.png')}
+                source={require('./drawer bacl.png')}
                 style={styles.absoluteIconImage}
                 resizeMode="contain"
               />

@@ -23,12 +23,10 @@ export default function App() {
       try {
         const camera = await CameraAPI.getCameraPermissionsAsync();
         const mediaGranted = await checkNativeStoragePermission();
-        const notifications = await Notifications.getPermissionsAsync();
 
         const granted = Boolean(
           (camera?.status === 'granted' || camera?.granted === true) &&
-          mediaGranted &&
-          (notifications?.status === 'granted' || notifications?.granted === true)
+          mediaGranted
         );
         setIsAuthorized(granted);
       } catch (err) {

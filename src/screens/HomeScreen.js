@@ -293,7 +293,9 @@ export default function HomeScreen({ route, onSearch, navigation }) {
       if (isCamera) {
         Alert.alert(
           'Camera Unavailable',
-          'Physical camera is not available on the iOS Simulator. Please test camera capture on a real iPhone device or use Gallery.'
+          Platform.OS === 'ios'
+            ? 'Physical camera is not available on the iOS Simulator. Please test camera capture on a real iPhone device or use Gallery.'
+            : 'Camera is currently unavailable on this device/emulator. Please use Gallery or check permissions.'
         );
       }
     }
@@ -654,35 +656,15 @@ export default function HomeScreen({ route, onSearch, navigation }) {
             >
               {/* Hero Image */}
               <Image
-                source={
-                  Platform.OS === 'ios'
-                    ? Image.resolveAssetSource(require('../components/hero_bg.jpg'))
-                    : require('../components/lucid-origin_Abstract_cinematic_scene_of_a_glowing_human_hand_palm-up_with_countless_intercon-0.jpg')
-                }
-                style={[
-                  styles.heroImage,
-                  Platform.OS === 'ios' && {
-                    width: Math.round(960 * scale),
-                    height: Math.round(HERO_H),
-                  },
-                ]}
+                source={require('../components/hero_bg.jpg')}
+                style={styles.heroImage}
                 resizeMode="cover"
               />
               {/* Search Bar */}
               <View style={styles.searchContainer}>
                 <Image
-                  source={
-                    Platform.OS === 'ios'
-                      ? Image.resolveAssetSource(require('../components/group_1000007000.png'))
-                      : require('../components/Group 1000007000.png')
-                  }
-                  style={[
-                    styles.searchBackground,
-                    Platform.OS === 'ios' && {
-                      width: Math.round(923 * scale),
-                      height: Math.round(147.57 * scale),
-                    },
-                  ]}
+                  source={require('../components/Group 1000007000.png')}
+                  style={styles.searchBackground}
                   resizeMode="stretch"
                 />
                 <TouchableOpacity
@@ -733,18 +715,8 @@ export default function HomeScreen({ route, onSearch, navigation }) {
                 onPress={() => acquireImage('gallery')}
               >
                 <Image
-                  source={
-                    Platform.OS === 'ios'
-                      ? Image.resolveAssetSource(require('../components/group_1000006996.png'))
-                      : require('../components/Group 1000006996.png')
-                  }
-                  style={[
-                    styles.actionBtnImage,
-                    Platform.OS === 'ios' && {
-                      width: Math.round(923 * scale),
-                      height: Math.round(VISUAL_H),
-                    },
-                  ]}
+                  source={require('../components/Group 1000006996.png')}
+                  style={styles.actionBtnImage}
                   resizeMode="stretch"
                 />
               </TouchableOpacity>
@@ -753,35 +725,15 @@ export default function HomeScreen({ route, onSearch, navigation }) {
               <View style={styles.buttonRow}>
                 <TouchableOpacity style={styles.squareBtn} onPress={() => acquireImage('camera')}>
                   <Image
-                    source={
-                      Platform.OS === 'ios'
-                        ? Image.resolveAssetSource(require('../components/group_1000006997.png'))
-                        : require('../components/Group 1000006997.png')
-                    }
-                    style={[
-                      styles.actionBtnImage,
-                      Platform.OS === 'ios' && {
-                        width: Math.round(440 * scale),
-                        height: Math.round(SQUARE_H),
-                      },
-                    ]}
+                    source={require('../components/Group 1000006997.png')}
+                    style={styles.actionBtnImage}
                     resizeMode="stretch"
                   />
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.squareBtn} onPress={() => setActiveTab('generate_ai')}>
                   <Image
-                    source={
-                      Platform.OS === 'ios'
-                        ? Image.resolveAssetSource(require('../components/group_1000006998.png'))
-                        : require('../components/Group 1000006998.png')
-                    }
-                    style={[
-                      styles.actionBtnImage,
-                      Platform.OS === 'ios' && {
-                        width: Math.round(440 * scale),
-                        height: Math.round(SQUARE_H),
-                      },
-                    ]}
+                    source={require('../components/Group 1000006998.png')}
+                    style={styles.actionBtnImage}
                     resizeMode="stretch"
                   />
                 </TouchableOpacity>
@@ -793,18 +745,8 @@ export default function HomeScreen({ route, onSearch, navigation }) {
                 onPress={() => navigation?.navigate('QRScanner')}
               >
                 <Image
-                  source={
-                    Platform.OS === 'ios'
-                      ? Image.resolveAssetSource(require('../components/group_1000007001.png'))
-                      : require('../components/Group 1000007001.png')
-                  }
-                  style={[
-                    styles.actionBtnImage,
-                    Platform.OS === 'ios' && {
-                      width: Math.round(923 * scale),
-                      height: Math.round(QR_H),
-                    },
-                  ]}
+                  source={require('../components/Group 1000007001.png')}
+                  style={styles.actionBtnImage}
                   resizeMode="stretch"
                 />
               </TouchableOpacity>
@@ -884,15 +826,10 @@ export default function HomeScreen({ route, onSearch, navigation }) {
       ]}>
         <TouchableOpacity style={styles.bottomTab} onPress={() => setActiveTab('explore')}>
           <Image
-            source={
-              Platform.OS === 'ios'
-                ? Image.resolveAssetSource(require('../components/si_ai-search-fill.png'))
-                : require('../components/si_ai-search-fill.png')
-            }
+            source={require('../components/si_ai-search-fill.png')}
             style={[
               styles.exploreIcon,
-              { tintColor: activeTab === 'explore' ? '#007AFF' : '#A0A3BD' },
-              Platform.OS === 'ios' && { width: Math.round(50 * scale), height: Math.round(50 * scale) }
+              { tintColor: activeTab === 'explore' ? '#007AFF' : '#A0A3BD' }
             ]}
           />
           <Text style={[styles.bottomTabText, activeTab === 'explore' && styles.bottomTabActiveText]}>Explore</Text>
@@ -900,15 +837,10 @@ export default function HomeScreen({ route, onSearch, navigation }) {
 
         <TouchableOpacity style={styles.bottomTab} onPress={() => setActiveTab('generate_ai')}>
           <Image
-            source={
-              Platform.OS === 'ios'
-                ? Image.resolveAssetSource(require('../components/mingcute_ai-fill.png'))
-                : require('../components/mingcute_ai-fill.png')
-            }
+            source={require('../components/mingcute_ai-fill.png')}
             style={[
               styles.generateAiIcon,
-              { tintColor: activeTab === 'generate_ai' ? '#007AFF' : '#A0A3BD' },
-              Platform.OS === 'ios' && { width: Math.round(50 * scale), height: Math.round(50 * scale) }
+              { tintColor: activeTab === 'generate_ai' ? '#007AFF' : '#A0A3BD' }
             ]}
           />
           <Text style={[styles.bottomTabText, activeTab === 'generate_ai' && styles.bottomTabActiveText]}>Generate AI</Text>
@@ -916,15 +848,10 @@ export default function HomeScreen({ route, onSearch, navigation }) {
 
         <TouchableOpacity style={styles.bottomTab} onPress={() => setActiveTab('history')}>
           <Image
-            source={
-              Platform.OS === 'ios'
-                ? Image.resolveAssetSource(require('../components/material-symbols_history-rounded.png'))
-                : require('../components/material-symbols_history-rounded.png')
-            }
+            source={require('../components/material-symbols_history-rounded.png')}
             style={[
               styles.historyIcon,
-              { tintColor: activeTab === 'history' ? '#007AFF' : '#A0A3BD' },
-              Platform.OS === 'ios' && { width: Math.round(50 * scale), height: Math.round(50 * scale) }
+              { tintColor: activeTab === 'history' ? '#007AFF' : '#A0A3BD' }
             ]}
           />
           <Text style={[styles.bottomTabText, activeTab === 'history' && styles.bottomTabActiveText]}>History</Text>
@@ -932,15 +859,10 @@ export default function HomeScreen({ route, onSearch, navigation }) {
 
         <TouchableOpacity style={styles.bottomTab} onPress={handleOpenSavedDownloads}>
           <Image
-            source={
-              Platform.OS === 'ios'
-                ? Image.resolveAssetSource(require('../components/material-symbols_download-rounded.png'))
-                : require('../components/material-symbols_download-rounded.png')
-            }
+            source={require('../components/material-symbols_download-rounded.png')}
             style={[
               styles.downloadIcon,
-              { tintColor: activeTab === 'downloads' ? '#007AFF' : '#A0A3BD' },
-              Platform.OS === 'ios' && { width: Math.round(50 * scale), height: Math.round(50 * scale) }
+              { tintColor: activeTab === 'downloads' ? '#007AFF' : '#A0A3BD' }
             ]}
           />
           <Text style={[styles.bottomTabText, activeTab === 'downloads' && styles.bottomTabActiveText]}>Downloads</Text>

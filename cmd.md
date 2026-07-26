@@ -31,3 +31,23 @@ npx expo start -c
 # Naya frontend/Expo module install karne ke liye:
 npx expo install <package_name>
 
+
+---
+
+## 📦 3. Build & Run Commands for Sharing (Android & iOS)
+
+### 🔹 Android Release Variant (Simple Expo Command)
+
+# Android Release APK build karne aur device/emulator par chalane ke liye:
+npx expo run:android --variant release
+
+# 📍 Generated Release APK Path (Sharing ke liye):
+# android/app/build/outputs/apk/release/app-release.apk
+
+
+### 🔹 iOS Release Configuration (Simple Expo Command)
+
+# iOS Release build chalane ke liye (Mac / Xcode Required):
+npx expo run:ios --configuration Release
+
+

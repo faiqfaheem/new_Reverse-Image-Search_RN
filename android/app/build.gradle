@@ -95,6 +95,10 @@ android {
         versionCode 1
         versionName "1.0.0"
 
+        ndk {
+            abiFilters "armeabi-v7a", "arm64-v8a"
+        }
+
         buildConfigField "String", "REACT_NATIVE_RELEASE_LEVEL", "\"${findProperty('reactNativeReleaseLevel') ?: 'stable'}\""
     }
     signingConfigs {
@@ -115,7 +119,7 @@ android {
             signingConfig signingConfigs.debug
             // R8 full mode code shrinking + resource minification
             minifyEnabled true
-            shrinkResources true
+            shrinkResources false
             proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
             def enablePngCrunchInRelease = findProperty('android.enablePngCrunchInReleaseBuilds') ?: 'true'
             crunchPngs enablePngCrunchInRelease.toBoolean()
@@ -129,6 +133,13 @@ android {
     }
     androidResources {
         ignoreAssetsPattern '!.svn:!.git:!.ds_store:!*.scc:!CVS:!thumbs.db:!picasa.ini:!*~'
+    }
+
+    applicationVariants.all { variant ->
+        variant.outputs.all { output ->
+            def name = "Reverse Image Search v${variant.versionName}.apk"
+            outputFileName = name
+        }
     }
 }
 
