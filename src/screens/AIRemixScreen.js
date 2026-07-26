@@ -106,9 +106,7 @@ export default function AIRemixScreen({ route, navigation }) {
   const [toastVisible, setToastVisible] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const toastOpacity = useRef(new Animated.Value(0)).current;
-  const abortControllerRef = useRef(null);
-
-
+  const abortControllersRef = useRef({});
 
   const formatIosImageUri = (uri) => {
     if (Platform.OS !== 'ios' || !uri) return uri;
@@ -127,7 +125,7 @@ export default function AIRemixScreen({ route, navigation }) {
   // ── Clean up state on screen unmount ──
   useEffect(() => {
     return () => {
-      abortControllerRef.current?.abort();
+      Object.values(abortControllersRef.current).forEach((c) => c?.abort());
       setSourceImageUri(null);
       setCurrentPhase(1);
       setSelectedModel(null);
@@ -249,32 +247,65 @@ export default function AIRemixScreen({ route, navigation }) {
 
   const currentRemixUri = iterations[selectedIndex] || null;
 
-  const handleCreateRemix = async () => {
+  const handleCreateRemix = async (countOverride) => {
     if (!sourceImageUri) {
       Alert.alert('No Image Selected', 'Please go back and select a photo from your gallery.');
       return;
     }
-    const usage = await checkUsageLimit('image_to_image', generationLimit);
+    const countToGenerate = countOverride || generationLimit || 1;
+    const usage = await checkUsageLimit('image_to_image', countToGenerate);
     if (!usage.allowed) {
-      Alert.alert('Limit Reached', `Not enough credits!`);
+      Alert.alert('Limit Reached', `Not enough credits left today to generate ${countToGenerate} image${countToGenerate > 1 ? 's' : ''}.`);
       return;
     }
     setLoading(true);
     try {
-      abortControllerRef.current = new AbortController();
-      const resultUrl = await generateImageToImage(
-        formatIosImageUri(sourceImageUri),
-        selectedModel?.style_preset || selectedModel?.id,
-        { aspectRatio, signal: abortControllerRef.current.signal }
-      );
-      await incrementUsage('image_to_image', generationLimit);
-      handleGenerationSuccess([resultUrl]);
+      const promises = Array.from({ length: countToGenerate }, (_, i) => {
+        const controller = new AbortController();
+        const reqId = `${Date.now()}_${i}_${Math.random()}`;
+        abortControllersRef.current[reqId] = controller;
+        const promptToSend = selectedModel?.style_preset || selectedModel?.name || selectedModelPrompt || '';
+        return generateImageToImage(
+          formatIosImageUri(sourceImageUri),
+          promptToSend,
+          { aspectRatio, signal: controller.signal }
+        ).finally(() => {
+          delete abortControllersRef.current[reqId];
+        });
+      });
+
+      const results = await Promise.allSettled(promises);
+      const validResults = [];
+      const errors = [];
+
+      for (const res of results) {
+        if (res.status === 'fulfilled' && res.value) {
+          validResults.push(res.value);
+        } else if (res.status === 'rejected') {
+          errors.push(res.reason || new Error('Image-to-image request failed with an unknown error.'));
+        } else if (res.status === 'fulfilled' && !res.value) {
+          errors.push(new Error('deAPI returned an empty image URL response.'));
+        }
+      }
+
+      if (validResults.length === 0) {
+        const firstError = errors[0] || new Error('Image generation failed.');
+        if (firstError?.name === 'AbortError') return;
+        console.error('[Remix] Detailed execution failure:', firstError);
+        const errorMsg = typeof firstError === 'string'
+          ? firstError
+          : (firstError?.message || 'Image generation failed.');
+        throw new Error(errorMsg);
+      }
+
+      await incrementUsage('image_to_image', validResults.length);
+      handleGenerationSuccess(validResults);
       setCurrentPhase(4);
-      showToast(`Successfully created ${selectedModel?.name || selectedModel?.id} remix!`);
+      showToast(`Successfully created ${validResults.length} remix image${validResults.length > 1 ? 's' : ''}!`);
     } catch (err) {
-      if (err.name === 'AbortError') return;
+      if (err?.name === 'AbortError') return;
       console.error('[Remix] Generation error:', err);
-      Alert.alert('Generation Failed', 'An error occurred.');
+      Alert.alert('Generation Failed', err.message || 'An error occurred during image generation.');
     } finally {
       setLoading(false);
     }
@@ -530,14 +561,7 @@ export default function AIRemixScreen({ route, navigation }) {
                 justifyContent: 'center',
               },
             ]}
-            onPress={async () => {
-              const usage = await checkUsageLimit('image_to_image', 1);
-              if (!usage.allowed) {
-                Alert.alert('Limit Reached', 'Not enough credits left today to generate more images.');
-                return;
-              }
-              handleCreateRemix();
-            }}
+            onPress={() => handleCreateRemix()}
             disabled={loading}
           >
             <Text style={styles.createBtnText}>Generate More</Text>
@@ -1134,6 +1158,11 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: '#2A2A35',
+    marginRight: 8,
+  },
+  variationThumbnailSelected: {
+    borderColor: '#ADC7FF',
+    borderWidth: 2,
   },
   variationImage: {
     width: '100%',
@@ -1374,6 +1403,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 16,
+    marginBottom: 30,
     elevation: 4,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },

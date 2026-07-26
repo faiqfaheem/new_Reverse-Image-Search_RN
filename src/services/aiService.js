@@ -176,10 +176,12 @@ export async function generateAIImage(promptText, options = {}) {
  * @param {object} options - Generation options containing signal
  * @returns {Promise<string>} Output render result image as Base64 or URL data URI.
  */
-const formatIosImageUri = (uri) => {
-  if (Platform.OS !== 'ios' || !uri) return uri;
-  // Ensure file:// scheme exists for iOS multi-part uploads
-  return uri.startsWith('file://') ? uri : `file://${uri}`;
+const ensureFileSchemeUri = (uri) => {
+  if (!uri) return uri;
+  if (uri.startsWith('content://') || uri.startsWith('file://') || uri.startsWith('data:')) {
+    return uri;
+  }
+  return `file://${uri}`;
 };
 
 export async function generateImageToImage(sourceImageUri, style_preset, options = {}) {
@@ -207,7 +209,7 @@ export async function generateImageToImage(sourceImageUri, style_preset, options
 
     console.log(`[deAPI Engine] Launching Image-to-Image synthesis job... Aspect Ratio: "${aspectRatio}", Size: ${sizeObj.width}x${sizeObj.height}`);
 
-    const validSourceUri = formatIosImageUri(sourceImageUri);
+    const validSourceUri = ensureFileSchemeUri(sourceImageUri);
 
     let processedImageUri = validSourceUri;
     try {
@@ -221,7 +223,7 @@ export async function generateImageToImage(sourceImageUri, style_preset, options
       console.warn("[deAPI Engine] Image resize failed, using original:", e);
     }
 
-    const uploadUri = formatIosImageUri(processedImageUri);
+    const uploadUri = ensureFileSchemeUri(processedImageUri);
 
     const formData = new FormData();
     formData.append('image', {
@@ -230,8 +232,10 @@ export async function generateImageToImage(sourceImageUri, style_preset, options
       type: 'image/jpeg',
     });
 
-    const promptText = style_preset; // style_preset now carries the full prompt
-    
+    const promptText = (style_preset && typeof style_preset === 'string' && style_preset.trim().length > 0)
+      ? style_preset.trim()
+      : 'Cinematic highly detailed digital art portrait, 8k resolution, photorealistic masterpiece';
+
     formData.append('prompt', promptText);
     formData.append('model', 'Flux_2_Klein_4B_BF16');
     formData.append('seed', Math.floor(Math.random() * 999999999).toString());
@@ -255,13 +259,30 @@ export async function generateImageToImage(sourceImageUri, style_preset, options
     if (!response.ok) {
       const errorText = await response.text();
       console.error("[deAPI Engine] HTTP Error:", response.status, errorText);
-      throw new Error(`HTTP ${response.status}: ${errorText}`);
+      if (response.status === 429) {
+        throw new Error("deAPI rate limit reached. Please wait a few seconds and try again.");
+      }
+      try {
+        const parsed = JSON.parse(errorText);
+        const msg = parsed.message || parsed.error || errorText;
+        throw new Error(`deAPI Error (${response.status}): ${msg}`);
+      } catch (_) {
+        throw new Error(`deAPI HTTP ${response.status}: ${errorText}`);
+      }
     }
 
     const data = await response.json();
     
     let resultUrl = '';
-    let requestId = data?.data?.request_id || data?.request_id;
+    let requestId =
+      data?.data?.request_id ||
+      data?.request_id ||
+      data?.data?.id ||
+      data?.id ||
+      data?.data?.job_id ||
+      data?.job_id ||
+      data?.data?.task_id ||
+      data?.task_id;
 
     if (requestId) {
       console.log(`[deAPI Engine] Job submitted (ID: ${requestId}). Polling for results...`);
@@ -290,6 +311,9 @@ export async function generateImageToImage(sourceImageUri, style_preset, options
           } else if (jobData.url) {
             resultUrl = jobData.url;
             break;
+          } else if (jobData.image_url) {
+            resultUrl = jobData.image_url;
+            break;
           } else if (jobData.images && jobData.images[0]) {
             resultUrl = jobData.images[0].url || jobData.images[0];
             break;
@@ -297,11 +321,14 @@ export async function generateImageToImage(sourceImageUri, style_preset, options
             resultUrl = jobData.output.url;
             break;
           } else if (Array.isArray(jobData.output) && jobData.output[0]) {
-             resultUrl = typeof jobData.output[0] === 'string' ? jobData.output[0] : jobData.output[0].url;
-             if (resultUrl) break;
+            resultUrl = typeof jobData.output[0] === 'string' ? jobData.output[0] : jobData.output[0].url;
+            if (resultUrl) break;
           } else if (jobData.result && jobData.result.url) {
-             resultUrl = jobData.result.url;
-             break;
+            resultUrl = jobData.result.url;
+            break;
+          } else if (jobData.data && (jobData.data.result_url || jobData.data.url || jobData.data.image_url)) {
+            resultUrl = jobData.data.result_url || jobData.data.url || jobData.data.image_url;
+            break;
           }
           
           if (jobData.status === 'done' || jobData.status === 'completed' || jobData.status === 'succeeded') {
@@ -314,10 +341,15 @@ export async function generateImageToImage(sourceImageUri, style_preset, options
       }
     } else {
       // Standard synchronous response parsing
-      if (data && data.data && data.data.length > 0) {
-        resultUrl = data.data[0].url || (data.data[0].b64_json ? `data:image/jpeg;base64,${data.data[0].b64_json}` : '');
-      } else if (data && data.url) {
-        resultUrl = data.url;
+      if (data && data.data) {
+        if (Array.isArray(data.data) && data.data.length > 0) {
+          resultUrl = data.data[0].url || (data.data[0].b64_json ? `data:image/jpeg;base64,${data.data[0].b64_json}` : '');
+        } else if (typeof data.data === 'object') {
+          resultUrl = data.data.result_url || data.data.url || data.data.image_url || '';
+        }
+      }
+      if (!resultUrl && data && (data.url || data.result_url || data.image_url)) {
+        resultUrl = data.url || data.result_url || data.image_url;
       }
     }
     
@@ -328,9 +360,9 @@ export async function generateImageToImage(sourceImageUri, style_preset, options
 
     return resultUrl;
   } catch (error) {
-    const errorDetails = error?.response?.data || error?.message || error;
+    const errorDetails = error?.response?.data || error?.message || error || 'Unknown error';
     console.error("[deAPI Engine] Execution pipeline failed:", errorDetails);
-    throw error;
+    throw (error instanceof Error ? error : new Error(typeof error === 'string' && error.trim() ? error : 'Image generation pipeline failed'));
   } finally {
     clearTimeout(timeoutId);
   }
