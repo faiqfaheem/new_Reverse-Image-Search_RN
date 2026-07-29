@@ -178,7 +178,7 @@ export async function generateAIImage(promptText, options = {}) {
  */
 const ensureFileSchemeUri = (uri) => {
   if (!uri) return uri;
-  if (uri.startsWith('content://') || uri.startsWith('file://') || uri.startsWith('data:')) {
+  if (uri.startsWith('content://') || uri.startsWith('file://') || uri.startsWith('data:') || uri.startsWith('http://') || uri.startsWith('https://')) {
     return uri;
   }
   return `file://${uri}`;
@@ -209,69 +209,116 @@ export async function generateImageToImage(sourceImageUri, style_preset, options
 
     console.log(`[deAPI Engine] Launching Image-to-Image synthesis job... Aspect Ratio: "${aspectRatio}", Size: ${sizeObj.width}x${sizeObj.height}`);
 
-    const validSourceUri = ensureFileSchemeUri(sourceImageUri);
+    let localFileUri = ensureFileSchemeUri(sourceImageUri);
+    if (sourceImageUri && (sourceImageUri.startsWith('http://') || sourceImageUri.startsWith('https://'))) {
+      const tempTarget = `${FileSystem.cacheDirectory}temp_remix_input_${Date.now()}.jpg`;
+      const downloadRes = await FileSystem.downloadAsync(sourceImageUri, tempTarget);
+      localFileUri = downloadRes.uri;
+    }
 
-    let processedImageUri = validSourceUri;
+    let uploadUri = localFileUri;
     try {
       const manipResult = await ImageManipulator.manipulateAsync(
-        validSourceUri,
+        localFileUri,
         [{ resize: { width: sizeObj.width, height: sizeObj.height } }],
         { compress: 0.9, format: ImageManipulator.SaveFormat.JPEG }
       );
-      processedImageUri = manipResult.uri;
+      if (manipResult && manipResult.uri) {
+        uploadUri = manipResult.uri;
+      }
     } catch (e) {
-      console.warn("[deAPI Engine] Image resize failed, using original:", e);
+      console.warn("[deAPI Engine] Image resize failed, using original URI:", e);
     }
 
-    const uploadUri = ensureFileSchemeUri(processedImageUri);
-
-    const formData = new FormData();
-    formData.append('image', {
-      uri: uploadUri,
-      name: 'source_image.jpg',
-      type: 'image/jpeg',
-    });
+    uploadUri = ensureFileSchemeUri(uploadUri);
 
     const promptText = (style_preset && typeof style_preset === 'string' && style_preset.trim().length > 0)
       ? style_preset.trim()
       : 'Cinematic highly detailed digital art portrait, 8k resolution, photorealistic masterpiece';
 
-    formData.append('prompt', promptText);
-    formData.append('model', 'Flux_2_Klein_4B_BF16');
-    formData.append('seed', Math.floor(Math.random() * 999999999).toString());
-    formData.append('steps', '4');
-    formData.append('width', sizeObj.width.toString());
-    formData.append('height', sizeObj.height.toString());
+    let uploadResult;
+    const maxRetries = 5;
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        if (FileSystem.uploadAsync && FileSystem.FileSystemUploadType) {
+          uploadResult = await FileSystem.uploadAsync(
+            'https://api.deapi.ai/api/v2/images/edits',
+            uploadUri,
+            {
+              httpMethod: 'POST',
+              uploadType: FileSystem.FileSystemUploadType.MULTIPART,
+              fieldName: 'image',
+              mimeType: 'image/jpeg',
+              headers: {
+                'Authorization': `Bearer ${apiKey}`,
+                'Accept': 'application/json',
+              },
+              parameters: {
+                prompt: promptText,
+                model: 'Flux_2_Klein_4B_BF16',
+                seed: Math.floor(Math.random() * 999999999).toString(),
+                steps: '4',
+                width: sizeObj.width.toString(),
+                height: sizeObj.height.toString(),
+              },
+            }
+          );
+        } else {
+          const formData = new FormData();
+          formData.append('image', {
+            uri: uploadUri,
+            name: 'source_image.jpg',
+            type: 'image/jpeg',
+          });
+          formData.append('prompt', promptText);
+          formData.append('model', 'Flux_2_Klein_4B_BF16');
+          formData.append('seed', Math.floor(Math.random() * 999999999).toString());
+          formData.append('steps', '4');
+          formData.append('width', sizeObj.width.toString());
+          formData.append('height', sizeObj.height.toString());
 
-    const response = await fetch(
-      'https://api.deapi.ai/api/v2/images/edits',
-      {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Accept': 'application/json',
-        },
-        body: formData,
-        signal: fetchSignal
+          const response = await fetch('https://api.deapi.ai/api/v2/images/edits', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${apiKey}`,
+              'Accept': 'application/json',
+            },
+            body: formData,
+            signal: fetchSignal
+          });
+          const textBody = await response.text();
+          uploadResult = { status: response.status, body: textBody };
+        }
+      } catch (err) {
+        console.error(`[deAPI Engine] Upload attempt ${attempt} failed:`, err);
+        if (attempt === maxRetries) throw err;
       }
-    );
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("[deAPI Engine] HTTP Error:", response.status, errorText);
-      if (response.status === 429) {
+      if (uploadResult && uploadResult.status === 429 && attempt < maxRetries) {
+        const backoffMs = attempt * 3000;
+        console.warn(`[deAPI Engine] Rate limited (429). Retrying in ${backoffMs / 1000}s (Attempt ${attempt}/${maxRetries})...`);
+        await new Promise(res => setTimeout(res, backoffMs));
+        continue;
+      }
+      break;
+    }
+
+    if (!uploadResult || uploadResult.status < 200 || uploadResult.status >= 300) {
+      const errorText = uploadResult?.body || 'No response received from deAPI server';
+      console.error("[deAPI Engine] HTTP Error:", uploadResult?.status, errorText);
+      if (uploadResult?.status === 429) {
         throw new Error("deAPI rate limit reached. Please wait a few seconds and try again.");
       }
       try {
         const parsed = JSON.parse(errorText);
-        const msg = parsed.message || parsed.error || errorText;
-        throw new Error(`deAPI Error (${response.status}): ${msg}`);
+        const msg = parsed.message || parsed.error || (parsed.errors ? JSON.stringify(parsed.errors) : errorText);
+        throw new Error(`deAPI Error (${uploadResult?.status}): ${msg}`);
       } catch (_) {
-        throw new Error(`deAPI HTTP ${response.status}: ${errorText}`);
+        throw new Error(`deAPI HTTP ${uploadResult?.status}: ${errorText}`);
       }
     }
 
-    const data = await response.json();
+    const data = typeof uploadResult.body === 'string' ? JSON.parse(uploadResult.body) : uploadResult.body;
     
     let resultUrl = '';
     let requestId =
@@ -286,8 +333,8 @@ export async function generateImageToImage(sourceImageUri, style_preset, options
 
     if (requestId) {
       console.log(`[deAPI Engine] Job submitted (ID: ${requestId}). Polling for results...`);
-      for (let i = 0; i < 60; i++) { // Poll for up to 120 seconds
-        await new Promise(resolve => setTimeout(resolve, 2000));
+      for (let i = 0; i < 60; i++) { // Poll for up to 150 seconds
+        await new Promise(resolve => setTimeout(resolve, 2500));
         const pollResponse = await fetch(`https://api.deapi.ai/api/v2/jobs/${requestId}`, {
           method: 'GET',
           headers: { 'Authorization': `Bearer ${apiKey}`, 'Accept': 'application/json' },
@@ -304,7 +351,6 @@ export async function generateImageToImage(sourceImageUri, style_preset, options
             throw new Error(`deAPI job failed: ${jobData.error || jobData.message || JSON.stringify(jobData)}`);
           }
           
-          // Try to extract URL from various common response structures
           if (jobData.result_url) {
             resultUrl = jobData.result_url;
             break;
@@ -332,6 +378,7 @@ export async function generateImageToImage(sourceImageUri, style_preset, options
           }
           
           if (jobData.status === 'done' || jobData.status === 'completed' || jobData.status === 'succeeded') {
+            if (resultUrl) break;
             console.warn(`[deAPI Engine] Job is marked as done but no URL was found in expected keys. Full data:`, jobData);
             break;
           }
@@ -340,7 +387,6 @@ export async function generateImageToImage(sourceImageUri, style_preset, options
         }
       }
     } else {
-      // Standard synchronous response parsing
       if (data && data.data) {
         if (Array.isArray(data.data) && data.data.length > 0) {
           resultUrl = data.data[0].url || (data.data[0].b64_json ? `data:image/jpeg;base64,${data.data[0].b64_json}` : '');

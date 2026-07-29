@@ -109,9 +109,11 @@ export default function AIRemixScreen({ route, navigation }) {
   const abortControllersRef = useRef({});
 
   const formatIosImageUri = (uri) => {
-    if (Platform.OS !== 'ios' || !uri) return uri;
-    // Ensure file:// scheme exists for iOS multi-part uploads
-    return uri.startsWith('file://') ? uri : `file://${uri}`;
+    if (!uri) return uri;
+    if (uri.startsWith('content://') || uri.startsWith('file://') || uri.startsWith('data:') || uri.startsWith('http://') || uri.startsWith('https://')) {
+      return uri;
+    }
+    return `file://${uri}`;
   };
 
   useEffect(() => {
@@ -252,7 +254,13 @@ export default function AIRemixScreen({ route, navigation }) {
       Alert.alert('No Image Selected', 'Please go back and select a photo from your gallery.');
       return;
     }
-    const countToGenerate = countOverride || generationLimit || 1;
+
+    const numericOverride = (typeof countOverride === 'number' && countOverride > 0) ? countOverride : null;
+    const numericLimit = (typeof generationLimit === 'number' && generationLimit > 0) ? generationLimit : 1;
+    const countToGenerate = numericOverride || numericLimit;
+
+    console.log(`[Remix] handleCreateRemix starting... countToGenerate=${countToGenerate}, sourceImageUri=${sourceImageUri}`);
+
     const usage = await checkUsageLimit('image_to_image', countToGenerate);
     if (!usage.allowed) {
       Alert.alert('Limit Reached', `Not enough credits left today to generate ${countToGenerate} image${countToGenerate > 1 ? 's' : ''}.`);
@@ -260,42 +268,52 @@ export default function AIRemixScreen({ route, navigation }) {
     }
     setLoading(true);
     try {
-      const promises = Array.from({ length: countToGenerate }, (_, i) => {
+      const validResults = [];
+      const errors = [];
+
+      for (let i = 0; i < countToGenerate; i++) {
         const controller = new AbortController();
         const reqId = `${Date.now()}_${i}_${Math.random()}`;
         abortControllersRef.current[reqId] = controller;
         const promptToSend = selectedModel?.style_preset || selectedModel?.name || selectedModelPrompt || '';
-        return generateImageToImage(
-          formatIosImageUri(sourceImageUri),
-          promptToSend,
-          { aspectRatio, signal: controller.signal }
-        ).finally(() => {
+
+        try {
+          console.log(`[Remix] Executing generation ${i + 1}/${countToGenerate}...`);
+          const resUrl = await generateImageToImage(
+            formatIosImageUri(sourceImageUri),
+            promptToSend,
+            { aspectRatio, signal: controller.signal }
+          );
+          if (resUrl) {
+            console.log(`[Remix] Generation ${i + 1} succeeded: ${resUrl}`);
+            validResults.push(resUrl);
+          } else {
+            errors.push(new Error('deAPI returned an empty image URL response.'));
+          }
+        } catch (err) {
+          console.error(`[Remix] Generation ${i + 1} failed:`, err);
+          if (err?.name === 'AbortError') {
+            console.log('[Remix] Request aborted.');
+            return;
+          }
+          errors.push(err);
+        } finally {
           delete abortControllersRef.current[reqId];
-        });
-      });
+        }
 
-      const results = await Promise.allSettled(promises);
-      const validResults = [];
-      const errors = [];
-
-      for (const res of results) {
-        if (res.status === 'fulfilled' && res.value) {
-          validResults.push(res.value);
-        } else if (res.status === 'rejected') {
-          errors.push(res.reason || new Error('Image-to-image request failed with an unknown error.'));
-        } else if (res.status === 'fulfilled' && !res.value) {
-          errors.push(new Error('deAPI returned an empty image URL response.'));
+        // Add a small pause between consecutive batch requests to prevent rate limit spikes
+        if (i < countToGenerate - 1) {
+          await new Promise(r => setTimeout(r, 2000));
         }
       }
 
       if (validResults.length === 0) {
-        const firstError = errors[0] || new Error('Image generation failed.');
+        const firstError = errors[0] || new Error('Image generation failed with no valid result.');
         if (firstError?.name === 'AbortError') return;
         console.error('[Remix] Detailed execution failure:', firstError);
-        const errorMsg = typeof firstError === 'string'
-          ? firstError
-          : (firstError?.message || 'Image generation failed.');
-        throw new Error(errorMsg);
+        const errorMsg = firstError?.message || (typeof firstError === 'string' ? firstError : 'Image generation failed.');
+        Alert.alert('Generation Failed', errorMsg);
+        return;
       }
 
       await incrementUsage('image_to_image', validResults.length);
@@ -502,7 +520,7 @@ export default function AIRemixScreen({ route, navigation }) {
               })}
             </View>
           </ScrollView>
-          <TouchableOpacity style={styles.createBtn} onPress={handleCreateRemix} disabled={loading}>
+          <TouchableOpacity style={styles.createBtn} onPress={() => handleCreateRemix()} disabled={loading}>
             <Text style={styles.createBtnText}>Create</Text>
             <ArrowRight size={20} color="#00285B" style={{ marginLeft: 8 }} />
           </TouchableOpacity>
