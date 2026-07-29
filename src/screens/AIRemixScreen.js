@@ -332,19 +332,52 @@ export default function AIRemixScreen({ route, navigation }) {
   const handleDownloadRemix = async () => {
     if (!currentRemixUri) return;
     const { status } = await MediaLibrary.requestPermissionsAsync();
-    if (status !== 'granted') return;
+    if (status !== 'granted') {
+      Alert.alert('Permission Denied', 'Permission to access gallery is required to save photos.');
+      return;
+    }
     try {
-      let tempUri = '';
+      // 1. Download image to permanent local app documentDirectory with a unique name
+      const fileFilename = `ai_remix_${Date.now()}_${Math.floor(Math.random() * 1000)}.jpg`;
+      const localUri = `${FileSystem.documentDirectory}${fileFilename}`;
+
       if (currentRemixUri.startsWith('http')) {
-        const download = await FileSystem.downloadAsync(currentRemixUri, `${FileSystem.documentDirectory}temp.jpg`);
-        tempUri = download.uri;
+        await FileSystem.downloadAsync(currentRemixUri, localUri);
       } else {
-        tempUri = currentRemixUri;
+        await FileSystem.copyAsync({ from: currentRemixUri, to: localUri });
       }
-      await MediaLibrary.saveToLibraryAsync(tempUri);
-      showToast('Image saved to gallery');
+
+      // 2. Save asset to MediaLibrary / Photo Album
+      let assetCreated = false;
+      let galleryAssetId = null;
+      try {
+        const asset = await MediaLibrary.createAssetAsync(localUri);
+        assetCreated = true;
+        galleryAssetId = asset.id;
+        const albumName = 'Reverse Image Search';
+        const album = await MediaLibrary.getAlbumAsync(albumName);
+        if (album === null) {
+          await MediaLibrary.createAlbumAsync(albumName, asset, false);
+        } else {
+          await MediaLibrary.addAssetsToAlbumAsync([asset], album, false);
+        }
+      } catch (saveErr) {
+        console.warn("Album saving failed, fallback to saveToLibraryAsync:", saveErr);
+        if (!assetCreated) {
+          await MediaLibrary.saveToLibraryAsync(localUri);
+        }
+      }
+
+      // 3. Save download metadata record so it appears in AI Art Saved Gallery (isAI = true)
+      const aiOriginalName = currentRemixUri.startsWith('http')
+        ? (currentRemixUri.split('/').pop().split('?')[0] || fileFilename)
+        : fileFilename;
+      await addSavedDownload(localUri, galleryAssetId, true, aiOriginalName);
+
+      showToast('Saved to AI Art Gallery & Photos!');
     } catch (err) {
-      Alert.alert('Download Failed', err.message);
+      console.error('Download Remix error:', err);
+      Alert.alert('Download Failed', err.message || 'Could not save image.');
     }
   };
 

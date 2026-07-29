@@ -87,9 +87,9 @@ export default function DownloadsScreen({ route, navigation, isTab, onOpenDrawer
     fetchDownloads();
   }, []);
 
-  // ── Hardware back: only active while this screen is focused ──
   useFocusEffect(
     useCallback(() => {
+      fetchDownloads();
       const backAction = () => {
         // Priority 1: close image preview
         if (previewImage) {
