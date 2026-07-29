@@ -18,12 +18,12 @@ import {
   TextInput,
   BackHandler,
 } from 'react-native';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 import { ArrowLeft, ArrowRight, Sparkles, Download, Image as ImageIcon, RefreshCw, X, Maximize2 } from 'lucide-react-native';
 import * as FileSystem from 'expo-file-system/legacy';
 import * as MediaLibrary from 'expo-media-library';
 import * as ImagePicker from 'expo-image-picker';
-import { generateImageToImage, uploadImageToTempCloud } from '../services/aiService';
+import { generateImageToImage, uploadImageToTempCloud, getCleanErrorMessage } from '../services/aiService';
 import { addSavedDownload } from '../utils/downloadManager';
 import { checkUsageLimit, incrementUsage } from '../utils/usageLimitManager';
 
@@ -100,7 +100,16 @@ export default function AIRemixScreen({ route, navigation }) {
   const [iterations, setIterations] = useState([]);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [isFullScreen, setIsFullScreen] = useState(false);
+  const isFocused = useIsFocused();
+
+  useEffect(() => {
+    if (!isFocused && Platform.OS === 'ios') {
+      setLoading(false);
+      setIsFullScreen(false);
+    }
+  }, [isFocused]);
 
   // Toast notifications state
   const [toastVisible, setToastVisible] = useState(false);
@@ -311,8 +320,8 @@ export default function AIRemixScreen({ route, navigation }) {
         const firstError = errors[0] || new Error('Image generation failed with no valid result.');
         if (firstError?.name === 'AbortError') return;
         console.error('[Remix] Detailed execution failure:', firstError);
-        const errorMsg = firstError?.message || (typeof firstError === 'string' ? firstError : 'Image generation failed.');
-        Alert.alert('Generation Failed', errorMsg);
+        const userMsg = getCleanErrorMessage(firstError);
+        Alert.alert('Server Busy', userMsg);
         return;
       }
 
@@ -323,7 +332,8 @@ export default function AIRemixScreen({ route, navigation }) {
     } catch (err) {
       if (err?.name === 'AbortError') return;
       console.error('[Remix] Generation error:', err);
-      Alert.alert('Generation Failed', err.message || 'An error occurred during image generation.');
+      const userMsg = getCleanErrorMessage(err);
+      Alert.alert('Server Busy', userMsg);
     } finally {
       setLoading(false);
     }
@@ -336,54 +346,76 @@ export default function AIRemixScreen({ route, navigation }) {
       Alert.alert('Permission Denied', 'Permission to access gallery is required to save photos.');
       return;
     }
+    setIsSaving(true);
     try {
       // 1. Download image to permanent local app documentDirectory with a unique name
       const fileFilename = `ai_remix_${Date.now()}_${Math.floor(Math.random() * 1000)}.jpg`;
       const localUri = `${FileSystem.documentDirectory}${fileFilename}`;
 
       if (currentRemixUri.startsWith('http')) {
-        await FileSystem.downloadAsync(currentRemixUri, localUri);
+        try {
+          const response = await fetch(currentRemixUri);
+          const blob = await response.blob();
+          const base64Data = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+              const base64 = reader.result.split(',')[1];
+              resolve(base64);
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+          });
+          await FileSystem.writeAsStringAsync(localUri, base64Data, { encoding: 'base64' });
+        } catch (fetchErr) {
+          console.warn("Fast fetch fallback to downloadAsync:", fetchErr);
+          await FileSystem.downloadAsync(currentRemixUri, localUri);
+        }
       } else {
         await FileSystem.copyAsync({ from: currentRemixUri, to: localUri });
       }
 
-      // 2. Save asset to MediaLibrary / Photo Album
-      let assetCreated = false;
+      // 2. Save asset directly to MediaLibrary / Photos
       let galleryAssetId = null;
       try {
         const asset = await MediaLibrary.createAssetAsync(localUri);
-        assetCreated = true;
         galleryAssetId = asset.id;
-        const albumName = 'Reverse Image Search';
-        const album = await MediaLibrary.getAlbumAsync(albumName);
-        if (album === null) {
-          await MediaLibrary.createAlbumAsync(albumName, asset, false);
-        } else {
-          await MediaLibrary.addAssetsToAlbumAsync([asset], album, false);
-        }
       } catch (saveErr) {
-        console.warn("Album saving failed, fallback to saveToLibraryAsync:", saveErr);
-        if (!assetCreated) {
-          await MediaLibrary.saveToLibraryAsync(localUri);
-        }
+        console.warn("Fast gallery save fallback:", saveErr);
+        await MediaLibrary.saveToLibraryAsync(localUri);
       }
 
       // 3. Save download metadata record so it appears in AI Art Saved Gallery (isAI = true)
       const aiOriginalName = currentRemixUri.startsWith('http')
         ? (currentRemixUri.split('/').pop().split('?')[0] || fileFilename)
         : fileFilename;
-      await addSavedDownload(localUri, galleryAssetId, true, aiOriginalName);
+      await addSavedDownload(localUri, galleryAssetId, true, aiOriginalName, 'ai');
 
       showToast('Saved to AI Art Gallery & Photos!');
     } catch (err) {
       console.error('Download Remix error:', err);
       Alert.alert('Download Failed', err.message || 'Could not save image.');
+    } finally {
+      setIsSaving(false);
     }
   };
 
   const handleHeaderBack = () => {
     if (loading) return;
-    if (currentPhase === 1) navigation?.goBack();
+    if (currentPhase === 1) {
+      if (Platform.OS === 'ios') {
+        try {
+          navigation?.navigate('Home');
+        } catch (_) {
+          navigation?.navigate('HomeScreen');
+        }
+      } else {
+        if (navigation?.canGoBack()) {
+          navigation.goBack();
+        } else {
+          navigation?.navigate('Home');
+        }
+      }
+    }
     else if (currentPhase === 2) { setSelectedModel(null); setCurrentPhase(1); }
     else if (currentPhase === 3) { setSourceImageUri(null); setSelectedModel(null); setCurrentPhase(1); }
     else if (currentPhase === 4) setCurrentPhase(3);
@@ -565,6 +597,21 @@ export default function AIRemixScreen({ route, navigation }) {
           <ScrollView contentContainerStyle={styles.phase4ScrollContainer}>
             <TouchableOpacity
               onPress={() => setIsFullScreen(true)}
+              onLongPress={
+                Platform.OS === 'ios'
+                  ? () => {
+                      if (!currentRemixUri) return;
+                      Alert.alert(
+                        'Save Image',
+                        'Would you like to save this image to your photo gallery?',
+                        [
+                          { text: 'Cancel', style: 'cancel' },
+                          { text: 'Save Image', onPress: () => handleDownloadRemix() },
+                        ]
+                      );
+                    }
+                  : undefined
+              }
               style={[
                 styles.resultImageContainer,
                 Platform.OS === 'ios' && {
@@ -646,7 +693,7 @@ export default function AIRemixScreen({ route, navigation }) {
               {loadingStage === 0
                 ? "Uploading source image & parameters..."
                 : loadingStage === 1
-                  ? "Synthesizing style remix via Vision-X models..."
+                  ? "Synthesizing style..."
                   : "Applying high-res detail & finalizing output..."}
             </Text>
 
@@ -655,6 +702,22 @@ export default function AIRemixScreen({ route, navigation }) {
               <View style={[styles.stepDot, loadingStage >= 0 && styles.stepDotActive]} />
               <View style={[styles.stepDot, loadingStage >= 1 && styles.stepDotActive]} />
               <View style={[styles.stepDot, loadingStage >= 2 && styles.stepDotActive]} />
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Saving / Download Progress Dialogue */}
+      <Modal visible={isSaving} transparent={true} animationType="fade">
+        <View style={styles.modalLoadingOverlay}>
+          <View style={styles.loadingCard}>
+            <ActivityIndicator size="large" color="#ADC7FF" style={{ marginBottom: 16 }} />
+            <Text style={styles.loadingStageTitle}>Saving Image...</Text>
+            <Text style={styles.loadingStageSubtext}>Saving your AI remix to photo gallery...</Text>
+            <View style={styles.stepDotsRow}>
+              <View style={[styles.stepDot, styles.stepDotActive]} />
+              <View style={[styles.stepDot, styles.stepDotActive]} />
+              <View style={styles.stepDot} />
             </View>
           </View>
         </View>

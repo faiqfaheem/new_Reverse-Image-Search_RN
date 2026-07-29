@@ -1,7 +1,7 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { ActivityIndicator, View } from 'react-native';
+import { ActivityIndicator, View, Platform } from 'react-native';
 
 import HomeScreen from '../screens/HomeScreen';
 import ResultScreen from '../screens/ResultScreen';
@@ -41,31 +41,43 @@ export default function AppNavigator({ isAuthorized, onPermissionsGranted }) {
     return "Home";
   };
 
+  const stackScreenOptions = {
+    headerShown: false,
+    animation: 'slide_from_right',
+    detachPreviousScreen: false,
+    contentStyle: { backgroundColor: '#131313' },
+    animationDuration: 200,
+    ...(Platform.OS === 'ios' && {
+      gestureEnabled: true,
+      gestureDirection: 'horizontal',
+    }),
+  };
+
   return (
     <NavigationContainer>
       <Stack.Navigator
         initialRouteName={getInitialRoute()}
-        screenOptions={{
-          headerShown: false,
-          animation: 'slide_from_right',
-          detachPreviousScreen: false,
-          contentStyle: { backgroundColor: '#131313' },
-          animationDuration: 200,
-        }}
+        screenOptions={stackScreenOptions}
       >
         <Stack.Screen 
           name="Permission" 
-          options={{ animation: 'none' }}
+          options={{ animation: 'none', gestureEnabled: false }}
         >
           {(props) => <PermissionScreen {...props} onPermissionsGranted={onPermissionsGranted} />}
         </Stack.Screen>
         <Stack.Screen 
           name="Onboarding" 
           component={OnboardingScreen} 
-          options={{ animation: 'none' }}
+          options={{ animation: 'none', gestureEnabled: false }}
         />
         <Stack.Screen name="PremiumVIP" component={PremiumVIPScreen} />
-        <Stack.Screen name="Home" component={HomeScreen} />
+        <Stack.Screen 
+          name="Home" 
+          component={HomeScreen} 
+          options={{
+            gestureEnabled: Platform.OS === 'ios' ? false : true,
+          }}
+        />
         <Stack.Screen name="Result" component={ResultScreen} />
         <Stack.Screen name="AIArtDashboard" component={AIArtDashboardScreen} />
         <Stack.Screen name="AIImageScreen" component={AIImageScreen} />

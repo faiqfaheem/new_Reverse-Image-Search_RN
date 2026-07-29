@@ -21,7 +21,8 @@ import { SvgXml } from 'react-native-svg';
 import * as ImageManipulator from 'expo-image-manipulator';
 import * as FileSystem from 'expo-file-system/legacy';
 import * as MediaLibrary from 'expo-media-library';
-import { addSavedDownload } from '../utils/downloadManager';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { addSavedDownload, formatFileUri } from '../utils/downloadManager';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const scale = SCREEN_WIDTH / 1080;
@@ -96,12 +97,20 @@ export default function ResultScreen({ searchQuery: propSearchQuery, imageUri: p
   };
 
   const handleBack = () => {
-    if (navigation?.canGoBack()) {
-      navigation.goBack();
-    } else if (navigation) {
-      navigation.navigate('Home');
-    } else if (onBack) {
-      onBack();
+    if (Platform.OS === 'ios') {
+      try {
+        navigation?.navigate('Home');
+      } catch (_) {
+        navigation?.navigate('HomeScreen');
+      }
+    } else {
+      if (navigation?.canGoBack()) {
+        navigation.goBack();
+      } else if (navigation) {
+        navigation.navigate('Home');
+      } else if (onBack) {
+        onBack();
+      }
     }
   };
 
@@ -180,13 +189,29 @@ export default function ResultScreen({ searchQuery: propSearchQuery, imageUri: p
 
       if (targetUrlClean.startsWith('http://') || targetUrlClean.startsWith('https://')) {
         let filename = targetUrlClean.split('/').pop().split('?')[0];
-        // Ensure filename has a valid extension
         if (!filename || !/\.(jpg|jpeg|png|gif|webp|bmp)$/i.test(filename)) {
           filename = `search_image_${Date.now()}.jpg`;
         }
         const tempUri = `${FileSystem.documentDirectory}${filename}`;
-        const result = await FileSystem.downloadAsync(targetUrlClean, tempUri);
-        localUri = result.uri;
+        try {
+          const response = await fetch(targetUrlClean);
+          const blob = await response.blob();
+          const base64Data = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+              const base64 = reader.result.split(',')[1];
+              resolve(base64);
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+          });
+          await FileSystem.writeAsStringAsync(tempUri, base64Data, { encoding: 'base64' });
+          localUri = tempUri;
+        } catch (fetchErr) {
+          console.warn("Fast fetch fallback to downloadAsync:", fetchErr);
+          const result = await FileSystem.downloadAsync(targetUrlClean, tempUri);
+          localUri = result.uri;
+        }
       } else if (targetUrlClean.startsWith('data:')) {
         // Extract base64 payload and extension
         const parts = targetUrlClean.split(';base64,');
@@ -247,7 +272,33 @@ export default function ResultScreen({ searchQuery: propSearchQuery, imageUri: p
       } catch (_) {
         originalName = `image_${Date.now()}.jpg`;
       }
-      await addSavedDownload(localUri, galleryAssetId, false, originalName);
+
+      await addSavedDownload(localUri, galleryAssetId, false, originalName, 'browser');
+
+      // Direct AsyncStorage persistence for user_downloads key
+      try {
+        const formattedUri = formatFileUri(localUri);
+        const downloadRecord = {
+          id: String(Date.now()),
+          title: originalName,
+          filename: originalName,
+          originalName: originalName,
+          timestamp: Date.now(),
+          source: 'browser',
+          uri: formattedUri,
+          galleryAssetId: galleryAssetId || null,
+          isAI: false,
+        };
+        const existingStr = await AsyncStorage.getItem('user_downloads');
+        let existingList = existingStr ? JSON.parse(existingStr) : [];
+        if (!Array.isArray(existingList)) existingList = [];
+        if (!existingList.some(item => item.uri === formattedUri)) {
+          const updatedList = [downloadRecord, ...existingList];
+          await AsyncStorage.setItem('user_downloads', JSON.stringify(updatedList));
+        }
+      } catch (stErr) {
+        console.warn("AsyncStorage user_downloads save error:", stErr);
+      }
 
       showToast("Image saved successfully!");
     } catch (err) {
@@ -266,6 +317,7 @@ export default function ResultScreen({ searchQuery: propSearchQuery, imageUri: p
   const [detectedImageUrl, setDetectedImageUrl] = useState(null);
 
   const handleImageSaveOption = (url) => {
+    if (!url) return;
     setDetectedImageUrl(url);
   };
 
@@ -563,6 +615,16 @@ export default function ResultScreen({ searchQuery: propSearchQuery, imageUri: p
     }
   };
 
+  const getTabContainerStyle = (browserId) => {
+    const isActive = activeBrowser === browserId;
+    if (Platform.OS === 'ios') {
+      return isActive
+        ? { flex: 1, opacity: 1, zIndex: 2 }
+        : { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, opacity: 0, zIndex: -1, pointerEvents: 'none' };
+    }
+    return [{ flex: 1 }, !isActive && { display: 'none' }];
+  };
+
   const getTabLeft = (id) => {
     switch (id) {
       case 'google':
@@ -580,6 +642,12 @@ export default function ResultScreen({ searchQuery: propSearchQuery, imageUri: p
   const injectedJS = `
     (function() {
       const css = \`
+        /* Disable native iOS touch callout & user selection on images and links */
+        img, body, html, a, picture {
+          -webkit-touch-callout: none !important;
+          -webkit-user-select: none !important;
+          user-select: none !important;
+        }
         /* Google Image Search Header Elements */
         header, #header, #navigation, .M67Ar, .tsf, .header-wrapper, #search-form-header, .q7vebd, .F7Urfe, #sbtc { display: none !important; }
         /* Bing Image Search Header Elements */
@@ -606,35 +674,45 @@ export default function ResultScreen({ searchQuery: propSearchQuery, imageUri: p
         }));
       }
 
-      window.addEventListener('contextmenu', function(e) {
-        var target = e.target;
-        while (target && target.tagName !== 'IMG') {
-          target = target.parentNode;
-        }
-        if (target && target.tagName === 'IMG') {
-          var imageUrl = target.src || target.getAttribute('data-src') || target.getAttribute('data-actualsrc');
-          if (imageUrl) {
-            e.preventDefault();
-            triggerImageLongPress(imageUrl);
+      function getImgUrlFromElement(el) {
+        if (!el) return null;
+        var target = el;
+        var depth = 0;
+        while (target && depth < 5) {
+          if (target.tagName === 'IMG') {
+            return target.src || target.getAttribute('data-src') || target.getAttribute('data-actualsrc') || target.getAttribute('srcset');
           }
+          if (target.tagName === 'PICTURE') {
+            var childImg = target.querySelector('img');
+            if (childImg) return childImg.src || childImg.getAttribute('data-src') || childImg.getAttribute('data-actualsrc');
+          }
+          if (target.style && target.style.backgroundImage) {
+            var bgMatch = target.style.backgroundImage.match(/url\(['"]?(.*?)['"]?\)/);
+            if (bgMatch && bgMatch[1]) return bgMatch[1];
+          }
+          target = target.parentNode;
+          depth++;
         }
-      });
+        return null;
+      }
+
+      window.addEventListener('contextmenu', function(e) {
+        var imageUrl = getImgUrlFromElement(e.target);
+        if (imageUrl) {
+          e.preventDefault();
+          triggerImageLongPress(imageUrl);
+        }
+      }, true);
 
       var touchTimer = null;
       document.addEventListener('touchstart', function(e) {
         if (e.touches.length !== 1) return;
-        var target = e.target;
-        while (target && target.tagName !== 'IMG') {
-          target = target.parentNode;
-        }
-        if (target && target.tagName === 'IMG') {
+        var imageUrl = getImgUrlFromElement(e.target);
+        if (imageUrl) {
           clearTimeout(touchTimer);
           touchTimer = setTimeout(function() {
-            var imageUrl = target.src || target.getAttribute('data-src') || target.getAttribute('data-actualsrc');
-            if (imageUrl) {
-              triggerImageLongPress(imageUrl);
-            }
-          }, 800); // 800ms hold time
+            triggerImageLongPress(imageUrl);
+          }, 350);
         }
       }, { passive: true });
 
@@ -713,7 +791,7 @@ export default function ResultScreen({ searchQuery: propSearchQuery, imageUri: p
         ) : (
           <>
             {/* Google WebView */}
-            <View style={[{ flex: 1 }, activeBrowser !== 'google' && { display: 'none' }]}>
+            <View style={getTabContainerStyle('google')}>
               <WebView
                 source={googleSource}
                 originWhitelist={['*']}
@@ -723,6 +801,7 @@ export default function ResultScreen({ searchQuery: propSearchQuery, imageUri: p
                 domStorageEnabled={true}
                 javaScriptEnabled={true}
                 incognito={false}
+                allowsLinkPreview={false}
                 userAgent="Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Mobile Safari/537.36"
                 onMessage={handleMessage}
                 onError={(syntheticEvent) => console.warn('Google WebView load error:', syntheticEvent.nativeEvent)}
@@ -736,7 +815,7 @@ export default function ResultScreen({ searchQuery: propSearchQuery, imageUri: p
             </View>
 
             {/* Bing WebView */}
-            <View style={[{ flex: 1 }, activeBrowser !== 'bing' && { display: 'none' }]}>
+            <View style={getTabContainerStyle('bing')}>
               <WebView
                 source={bingSource}
                 originWhitelist={['*']}
@@ -746,7 +825,13 @@ export default function ResultScreen({ searchQuery: propSearchQuery, imageUri: p
                 domStorageEnabled={true}
                 javaScriptEnabled={true}
                 incognito={false}
-                userAgent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+                allowsLinkPreview={false}
+                scalesPageToFit={Platform.OS === 'ios'}
+                userAgent={
+                  Platform.OS === 'ios'
+                    ? 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1'
+                    : 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+                }
                 onMessage={handleMessage}
                 onError={(syntheticEvent) => console.warn('Bing WebView load error:', syntheticEvent.nativeEvent)}
                 renderLoading={() => (
@@ -759,7 +844,7 @@ export default function ResultScreen({ searchQuery: propSearchQuery, imageUri: p
             </View>
 
             {/* Yandex WebView */}
-            <View style={[{ flex: 1 }, activeBrowser !== 'yandex' && { display: 'none' }]}>
+            <View style={getTabContainerStyle('yandex')}>
               <WebView
                 source={yandexSource}
                 originWhitelist={['*']}
@@ -769,6 +854,7 @@ export default function ResultScreen({ searchQuery: propSearchQuery, imageUri: p
                 domStorageEnabled={true}
                 javaScriptEnabled={true}
                 incognito={false}
+                allowsLinkPreview={false}
                 userAgent="Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Mobile Safari/537.36"
                 onMessage={handleMessage}
                 onError={(syntheticEvent) => console.warn('Yandex WebView load error:', syntheticEvent.nativeEvent)}
@@ -985,9 +1071,11 @@ const styles = StyleSheet.create({
   },
   saveOverlayContainer: {
     position: 'absolute',
-    bottom: 16,
+    bottom: Platform.OS === 'ios' ? 24 : 16,
     left: 16,
     right: 16,
+    zIndex: 9999,
+    elevation: 9999,
     backgroundColor: '#191919',
     borderRadius: 12,
     paddingVertical: 12,
@@ -996,12 +1084,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     borderWidth: 1,
-    borderColor: '#DADCE0',
+    borderColor: '#3A3A3C',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
+    shadowOpacity: 0.3,
     shadowRadius: 6,
-    elevation: 6,
   },
   saveOverlayTitle: {
     fontSize: 14,
@@ -1034,7 +1121,7 @@ const styles = StyleSheet.create({
   },
   toastContainer: {
     position: 'absolute',
-    bottom: 90,
+    bottom: Platform.OS === 'ios' ? 180 : 150,
     left: '10%',
     right: '10%',
     backgroundColor: '#323232',
@@ -1047,7 +1134,8 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.25,
     shadowRadius: 4,
-    elevation: 5,
+    elevation: 10,
+    zIndex: 9999,
   },
   toastText: {
     color: '#FFF',

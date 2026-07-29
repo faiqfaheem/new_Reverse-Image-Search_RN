@@ -10,6 +10,7 @@ import {
   BackHandler,
   Image,
   ScrollView,
+  InteractionManager,
 } from 'react-native';
 import { ArrowLeft, ChevronRight } from 'lucide-react-native';
 import { SvgXml } from 'react-native-svg';
@@ -20,13 +21,33 @@ import { getUsageStats } from '../utils/usageLimitManager';
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const scale = SCREEN_WIDTH / 1080;
 
+// Pre-load and cache static image assets for iOS
+const DASHBOARD_ASSETS = [
+  require('../components/mask_group.png'),
+  require('../components/Background.png'),
+  require('../components/Background2.png'),
+  require('../components/Background1.png'),
+  require('../components/arrow.png'),
+];
+
+if (Platform.OS === 'ios') {
+  DASHBOARD_ASSETS.forEach((asset) => {
+    try {
+      const resolved = Image.resolveAssetSource(asset);
+      if (resolved && resolved.uri) {
+        Image.prefetch(resolved.uri);
+      }
+    } catch (_) {}
+  });
+}
+
 // Figma specs: W:960, H:640 — scale proportionally to screen width
 const HERO_WIDTH = SCREEN_WIDTH;
 const HERO_HEIGHT = (640 / 960) * SCREEN_WIDTH;
 
 
 
-export default function AIArtDashboardScreen({ navigation, isTab, onOpenDrawer }) {
+export default function AIArtDashboardScreen({ navigation, isTab, onOpenDrawer, onGoToHome }) {
   const [textToImageCredits, setTextToImageCredits] = React.useState('...');
   const [imageToImageCredits, setImageToImageCredits] = React.useState('...');
 
@@ -38,9 +59,21 @@ export default function AIArtDashboardScreen({ navigation, isTab, onOpenDrawer }
       setImageToImageCredits(imageStats.remaining);
     };
 
-    fetchStats();
+    if (Platform.OS === 'ios') {
+      InteractionManager.runAfterInteractions(() => {
+        fetchStats();
+      });
+    } else {
+      fetchStats();
+    }
 
-    const unsubscribeFocus = navigation?.addListener('focus', fetchStats);
+    const unsubscribeFocus = navigation?.addListener('focus', () => {
+      if (Platform.OS === 'ios') {
+        InteractionManager.runAfterInteractions(fetchStats);
+      } else {
+        fetchStats();
+      }
+    });
     const intervalId = setInterval(fetchStats, 2000);
 
     return () => {
@@ -51,25 +84,22 @@ export default function AIArtDashboardScreen({ navigation, isTab, onOpenDrawer }
 
   useFocusEffect(
     useCallback(() => {
-      if (isTab) {
-        // When rendered as a tab inside HomeScreen, let HomeScreen's BackHandler 
-        // handle the back press to switch the activeTab back to 'explore'.
-        return;
-      }
-
       const onDashboardBackPress = () => {
-        // In stack mode — go back to previous screen
-        if (navigation.canGoBack()) {
-          navigation.goBack();
-        } else {
-          navigation.navigate('Home');
+        if (isTab && onGoToHome) {
+          onGoToHome();
+          return true;
+        }
+        try {
+          navigation?.navigate('Home', { tab: 'explore' });
+        } catch (_) {
+          navigation?.navigate('HomeScreen', { tab: 'explore' });
         }
         return true;
       };
 
       const subscription = BackHandler.addEventListener('hardwareBackPress', onDashboardBackPress);
       return () => subscription.remove();
-    }, [navigation, isTab])
+    }, [navigation, isTab, onGoToHome])
   );
 
   return (
@@ -79,11 +109,23 @@ export default function AIArtDashboardScreen({ navigation, isTab, onOpenDrawer }
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerLeftContainer}>
-          {!isTab && (
-            <TouchableOpacity style={styles.backBtn} onPress={() => navigation?.goBack()}>
-              <ArrowLeft size={24} color="#FFF" />
-            </TouchableOpacity>
-          )}
+          <TouchableOpacity 
+            style={styles.backBtn}
+            hitSlop={{ top: 30, bottom: 30, left: 30, right: 30 }} 
+            onPress={() => {
+              if (isTab && onGoToHome) {
+                onGoToHome();
+              } else {
+                try {
+                  navigation?.navigate('Home', { tab: 'explore' });
+                } catch (_) {
+                  navigation?.navigate('HomeScreen', { tab: 'explore' });
+                }
+              }
+            }}
+          >
+            <ArrowLeft size={24} color="#FFF" />
+          </TouchableOpacity>
           <Text style={styles.headerTitle}>Image Search</Text>
         </View>
         {/* <TouchableOpacity onPress={() => navigation?.navigate('PremiumVIP')} activeOpacity={0.8}>

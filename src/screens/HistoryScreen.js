@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import {
   View,
   Text,
@@ -22,7 +23,7 @@ import * as FileSystem from 'expo-file-system/legacy';
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const scale = SCREEN_WIDTH / 1080;
 
-export default function HistoryScreen({ route, navigation, isTab, onOpenDrawer }) {
+export default function HistoryScreen({ route, navigation, isTab, onOpenDrawer, onGoToHome }) {
   const [historyItems, setHistoryItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -46,28 +47,39 @@ export default function HistoryScreen({ route, navigation, isTab, onOpenDrawer }
     fetchHistory();
   }, []);
 
-  // Back handler for Android: exit selection mode first, then go to Home
-  useEffect(() => {
-    const backAction = () => {
-      if (isSelectionMode) {
-        setSelectedIds([]);
-        setIsSelectionMode(false);
-        return true;
+  const handleBackAction = useCallback(() => {
+    if (isSelectionMode) {
+      setSelectedIds([]);
+      setIsSelectionMode(false);
+      return true;
+    }
+    if (isTab && onGoToHome) {
+      onGoToHome();
+      return true;
+    }
+    if (navigation) {
+      try {
+        navigation.navigate('Home', { tab: 'explore' });
+      } catch (_) {
+        navigation.navigate('HomeScreen', { tab: 'explore' });
       }
-      if (navigation) {
-        navigation.navigate('Home');
-        return true;
-      }
-      return false;
-    };
+      return true;
+    }
+    return false;
+  }, [isSelectionMode, isTab, onGoToHome, navigation]);
 
-    const backHandler = BackHandler.addEventListener(
-      'hardwareBackPress',
-      backAction
-    );
+  // Back handler for Android & iOS: exit selection mode first, then go directly to Home
+  useFocusEffect(
+    useCallback(() => {
+      fetchHistory();
+      const backHandler = BackHandler.addEventListener(
+        'hardwareBackPress',
+        handleBackAction
+      );
 
-    return () => backHandler.remove();
-  }, [isSelectionMode, navigation]);
+      return () => backHandler.remove();
+    }, [fetchHistory, handleBackAction])
+  );
 
   const getHistoryImageUri = (storedPath) => {
     if (!storedPath) return null;
@@ -310,11 +322,9 @@ export default function HistoryScreen({ route, navigation, isTab, onOpenDrawer }
       ) : (
         <View style={styles.header}>
           <View style={styles.headerLeftContainer}>
-            {!isTab && (
-              <TouchableOpacity style={styles.backBtn} onPress={() => navigation?.goBack()}>
-                <ArrowLeft size={24} color="#FFF" />
-              </TouchableOpacity>
-            )}
+            <TouchableOpacity style={styles.backBtn} onPress={handleBackAction}>
+              <ArrowLeft size={24} color="#FFF" />
+            </TouchableOpacity>
             <Text style={styles.headerTitle}>History</Text>
           </View>
           

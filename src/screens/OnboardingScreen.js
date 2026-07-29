@@ -27,7 +27,7 @@ const onboardingSlides = [
   },
   {
     title: "Create with AI",
-    desc: "Turn simple descriptions into museum-quality digital art using our specialized Vision-X models.",
+    desc: "Turn simple descriptions into museum-quality digital art.",
     image: require('../components/hero_graphic_container_margin.png')
   },
   {
@@ -80,7 +80,7 @@ export default function OnboardingScreen({ navigation }) {
     if (index === 1) {
       return (
         <Text style={styles.slideDescription}>
-          Turn simple descriptions into museum-quality digital art using our specialized <Text style={{ color: '#ADC7FF' }}>Vision-X</Text> models.
+          Turn simple descriptions into museum-quality digital art.
         </Text>
       );
     }

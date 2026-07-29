@@ -1,60 +1,105 @@
 import * as FileSystem from 'expo-file-system/legacy';
 import * as MediaLibrary from 'expo-media-library';
 import { Platform } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const METADATA_PATH = `${FileSystem.documentDirectory}downloads_metadata.json`;
+const ASYNC_STORAGE_KEY = 'user_downloads';
 
-const formatIOSUri = (path) => {
+export const formatFileUri = (path) => {
   if (!path) return path;
-  if (Platform.OS === 'ios' && typeof path === 'string') {
-    let cleanPath = path;
-    try {
-      cleanPath = decodeURI(path);
-    } catch (_) {
-      cleanPath = path;
-    }
+  let cleanPath = path;
+  try {
+    cleanPath = decodeURI(path);
+  } catch (_) {
+    cleanPath = path;
+  }
 
-    // Reconstruct current Sandbox Document Directory path if UUID changed on iOS rebuild
+  // Reconstruct current Sandbox Document Directory path if UUID changed on iOS rebuild
+  if (Platform.OS === 'ios') {
     if (cleanPath.includes('/Documents/')) {
       const filename = cleanPath.split('/Documents/').pop();
-      const currentDocDir = FileSystem.documentDirectory;
-      return `${currentDocDir}${filename}`;
+      const currentDocDir = FileSystem.documentDirectory.endsWith('/')
+        ? FileSystem.documentDirectory
+        : `${FileSystem.documentDirectory}/`;
+      cleanPath = `${currentDocDir}${filename}`;
     }
-
-    if (cleanPath.startsWith('/') && !cleanPath.startsWith('file://')) {
-      return `file://${cleanPath}`;
-    }
-    return cleanPath;
   }
-  return path;
+
+  if (typeof cleanPath === 'string' && cleanPath.startsWith('/') && !cleanPath.startsWith('file://')) {
+    return `file://${cleanPath}`;
+  }
+  return cleanPath;
 };
+
+export const formatIOSUri = formatFileUri;
 
 export async function getSavedDownloads() {
   try {
-    const info = await FileSystem.getInfoAsync(METADATA_PATH);
-    if (!info.exists) {
-      return [];
+    let list = [];
+    const asyncData = await AsyncStorage.getItem(ASYNC_STORAGE_KEY);
+    if (asyncData) {
+      try {
+        list = JSON.parse(asyncData);
+      } catch (_) {
+        list = [];
+      }
     }
-    const content = await FileSystem.readAsStringAsync(METADATA_PATH);
-    const list = JSON.parse(content);
 
-    // Verify each file still exists locally on the disk
+    // Fallback to FileSystem metadata file if AsyncStorage is empty
+    if (!Array.isArray(list) || list.length === 0) {
+      const info = await FileSystem.getInfoAsync(METADATA_PATH);
+      if (info.exists) {
+        const content = await FileSystem.readAsStringAsync(METADATA_PATH);
+        list = JSON.parse(content);
+      }
+    }
+
+    if (!Array.isArray(list)) {
+      list = [];
+    }
+
+    // Preserve valid records without aggressive filtering
     const verifiedList = [];
     for (const item of list) {
-      const formattedUri = formatIOSUri(item.uri);
-      const fileInfo = await FileSystem.getInfoAsync(formattedUri || item.uri);
-      if (fileInfo.exists) {
+      if (!item || (!item.uri && !item.id)) continue;
+      let targetUri = formatFileUri(item.uri || item.localUri || '');
+
+      let shouldKeep = true;
+      if (targetUri && (targetUri.startsWith('file://') || targetUri.startsWith('/'))) {
+        try {
+          const fileInfo = await FileSystem.getInfoAsync(targetUri);
+          if (!fileInfo.exists) {
+            const filename = targetUri.split('/').pop();
+            if (filename) {
+              const currentDocUri = `${FileSystem.documentDirectory}${filename}`;
+              const docInfo = await FileSystem.getInfoAsync(currentDocUri);
+              if (docInfo.exists) {
+                targetUri = currentDocUri;
+                shouldKeep = true;
+              } else if (!item.galleryAssetId && (!item.timestamp || Date.now() - item.timestamp > 86400000)) {
+                shouldKeep = false;
+              }
+            }
+          }
+        } catch (_) {
+          shouldKeep = true;
+        }
+      }
+
+      if (shouldKeep) {
         verifiedList.push({
           ...item,
-          uri: formattedUri || item.uri,
+          uri: targetUri || item.uri,
         });
       }
     }
 
-    // If some files were deleted externally, update metadata
-    if (verifiedList.length !== list.length) {
+    // Save updated list back to AsyncStorage and FileSystem
+    await AsyncStorage.setItem(ASYNC_STORAGE_KEY, JSON.stringify(verifiedList));
+    try {
       await FileSystem.writeAsStringAsync(METADATA_PATH, JSON.stringify(verifiedList));
-    }
+    } catch (_) {}
 
     return verifiedList;
   } catch (err) {
@@ -63,27 +108,45 @@ export async function getSavedDownloads() {
   }
 }
 
-export async function addSavedDownload(localUri, galleryAssetId = null, isAI = false, originalName = null) {
+export async function addSavedDownload(localUri, galleryAssetId = null, isAI = false, originalName = null, source = 'browser') {
   try {
-    const list = await getSavedDownloads();
-    const formattedUri = formatIOSUri(localUri);
-
-    // Prevent duplicate entries
-    if (list.some(item => item.uri === formattedUri || item.uri === localUri)) {
-      return;
-    }
+    const formattedUri = formatFileUri(localUri);
+    const filename = originalName || (formattedUri || localUri).split('/').pop();
 
     const newRecord = {
       id: String(Date.now()),
+      title: filename,
+      filename: filename,
+      originalName: filename,
+      timestamp: Date.now(),
+      source: source || (isAI ? 'ai' : 'browser'),
       uri: formattedUri || localUri,
       galleryAssetId,
-      isAI,
-      timestamp: Date.now(),
-      originalName: originalName || (formattedUri || localUri).split('/').pop(),
+      isAI: !!isAI,
     };
 
-    const updatedList = [newRecord, ...list];
-    await FileSystem.writeAsStringAsync(METADATA_PATH, JSON.stringify(updatedList));
+    let list = [];
+    const asyncData = await AsyncStorage.getItem(ASYNC_STORAGE_KEY);
+    if (asyncData) {
+      try {
+        list = JSON.parse(asyncData);
+      } catch (_) {
+        list = [];
+      }
+    }
+    if (!Array.isArray(list)) list = [];
+
+    // Prevent duplicate entries
+    if (!list.some(item => item.uri === formattedUri || item.uri === localUri)) {
+      list = [newRecord, ...list];
+    }
+
+    await AsyncStorage.setItem(ASYNC_STORAGE_KEY, JSON.stringify(list));
+    try {
+      await FileSystem.writeAsStringAsync(METADATA_PATH, JSON.stringify(list));
+    } catch (_) {}
+
+    return newRecord;
   } catch (err) {
     console.error("Error adding download record:", err);
   }
@@ -91,41 +154,75 @@ export async function addSavedDownload(localUri, galleryAssetId = null, isAI = f
 
 export async function deleteSavedDownload(id, localUri, galleryAssetId = null) {
   try {
-    // 1. Delete local file from app document directory
-    await FileSystem.deleteAsync(localUri, { idempotent: true });
+    // 1. Delete local file from app document directory if possible
+    if (localUri) {
+      try {
+        await FileSystem.deleteAsync(localUri, { idempotent: true });
+      } catch (fileErr) {
+        console.warn("Could not delete local file:", localUri, fileErr);
+      }
+    }
 
-    // 2. Remove from metadata list
-    const list = await getSavedDownloads();
-    const updatedList = list.filter(item => item.id !== id);
-    await FileSystem.writeAsStringAsync(METADATA_PATH, JSON.stringify(updatedList));
+    // 2. Remove from metadata list in AsyncStorage and FileSystem
+    let list = [];
+    const asyncData = await AsyncStorage.getItem(ASYNC_STORAGE_KEY);
+    if (asyncData) {
+      try {
+        list = JSON.parse(asyncData);
+      } catch (_) {}
+    }
+    if (!Array.isArray(list) || list.length === 0) {
+      list = await getSavedDownloads();
+    }
+
+    const updatedList = list.filter(item => item.id !== id && item.uri !== localUri);
+    await AsyncStorage.setItem(ASYNC_STORAGE_KEY, JSON.stringify(updatedList));
+    try {
+      await FileSystem.writeAsStringAsync(METADATA_PATH, JSON.stringify(updatedList));
+    } catch (_) {}
 
     return true;
   } catch (err) {
     console.error("Error deleting download record:", err);
-    throw err; // Propagate error so calling screen knows deletion was aborted
+    throw err;
   }
 }
 
 export async function deleteMultipleSavedDownloads(assets) {
   try {
-    // 1. Delete local files from app document directory
     for (const asset of assets) {
-      try {
-        await FileSystem.deleteAsync(asset.uri, { idempotent: true });
-      } catch (fileErr) {
-        console.warn("Could not delete local file:", asset.uri, fileErr);
+      if (asset.uri) {
+        try {
+          await FileSystem.deleteAsync(asset.uri, { idempotent: true });
+        } catch (fileErr) {
+          console.warn("Could not delete local file:", asset.uri, fileErr);
+        }
       }
     }
 
-    // 2. Remove from metadata list
-    const list = await getSavedDownloads();
+    let list = [];
+    const asyncData = await AsyncStorage.getItem(ASYNC_STORAGE_KEY);
+    if (asyncData) {
+      try {
+        list = JSON.parse(asyncData);
+      } catch (_) {}
+    }
+    if (!Array.isArray(list) || list.length === 0) {
+      list = await getSavedDownloads();
+    }
+
     const idsToRemove = assets.map(a => a.id);
-    const updatedList = list.filter(item => !idsToRemove.includes(item.id));
-    await FileSystem.writeAsStringAsync(METADATA_PATH, JSON.stringify(updatedList));
+    const urisToRemove = assets.map(a => a.uri);
+    const updatedList = list.filter(item => !idsToRemove.includes(item.id) && !urisToRemove.includes(item.uri));
+
+    await AsyncStorage.setItem(ASYNC_STORAGE_KEY, JSON.stringify(updatedList));
+    try {
+      await FileSystem.writeAsStringAsync(METADATA_PATH, JSON.stringify(updatedList));
+    } catch (_) {}
 
     return true;
   } catch (err) {
     console.error("Error in bulk delete manager:", err);
-    throw err; // Propagate error so calling screen knows deletion was aborted
+    throw err;
   }
 }

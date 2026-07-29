@@ -94,7 +94,10 @@ export async function generateAIImage(promptText, options = {}) {
     if (!response.ok) {
       const errorText = await response.text();
       console.error("[deAPI Text2Image] HTTP Error:", response.status, errorText);
-      throw new Error(`HTTP ${response.status}: ${errorText}`);
+      if (response.status === 429 || errorText.includes('Too Many Attempts')) {
+        throw new Error('429: Too Many Attempts');
+      }
+      throw new Error(`HTTP ${response.status}`);
     }
 
     const data = await response.json();
@@ -412,6 +415,20 @@ export async function generateImageToImage(sourceImageUri, style_preset, options
   } finally {
     clearTimeout(timeoutId);
   }
+}
+
+export function getCleanErrorMessage(err) {
+  const msg = err?.message || String(err || '');
+  if (msg.includes('429') || msg.toLowerCase().includes('too many') || msg.toLowerCase().includes('rate limit')) {
+    return 'The AI server is currently busy. Please wait a moment and try again.';
+  }
+  if (msg.includes('500') || msg.includes('502') || msg.includes('503')) {
+    return 'The AI server experienced a temporary issue. Please try again shortly.';
+  }
+  if (msg.toLowerCase().includes('network') || msg.toLowerCase().includes('timeout') || msg.includes('AbortError')) {
+    return 'Network connection weak or timed out. Please check your connection and try again.';
+  }
+  return 'Unable to generate image right now. Please try again in a few moments.';
 }
 
 

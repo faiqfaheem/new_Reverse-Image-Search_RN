@@ -18,8 +18,9 @@ import {
   Platform,
   BackHandler,
 } from 'react-native';
+import { useIsFocused } from '@react-navigation/native';
 import { ArrowLeft, Download, Sparkles, X } from 'lucide-react-native';
-import { generateAIImage } from '../services/aiService';
+import { generateAIImage, getCleanErrorMessage } from '../services/aiService';
 import * as FileSystem from 'expo-file-system/legacy';
 import * as MediaLibrary from 'expo-media-library';
 import { addSavedDownload } from '../utils/downloadManager';
@@ -64,6 +65,8 @@ export default function AIImageResultScreen({ route, navigation }) {
 
   const [previewImage, setPreviewImage] = useState(null);
 
+  const [isSaving, setIsSaving] = useState(false);
+
   const [toastVisible, setToastVisible] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const toastOpacity = useRef(new Animated.Value(0)).current;
@@ -103,6 +106,7 @@ export default function AIImageResultScreen({ route, navigation }) {
       return;
     }
 
+    setIsSaving(true);
     try {
       let localUri = uri;
 
@@ -121,36 +125,42 @@ export default function AIImageResultScreen({ route, navigation }) {
           encoding: 'base64',
         });
       } else if (uri.startsWith('http://') || uri.startsWith('https://')) {
-        const filename = uri.split('/').pop().split('?')[0] || `ai_art_${Date.now()}.jpg`;
+        const filename = `ai_art_${Date.now()}_${Math.floor(Math.random() * 1000)}.jpg`;
         const tempUri = `${FileSystem.documentDirectory}${filename}`;
-        const result = await FileSystem.downloadAsync(uri, tempUri);
-        localUri = result.uri;
+        try {
+          const response = await fetch(uri);
+          const blob = await response.blob();
+          const base64Data = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+              const base64 = reader.result.split(',')[1];
+              resolve(base64);
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+          });
+          await FileSystem.writeAsStringAsync(tempUri, base64Data, { encoding: 'base64' });
+          localUri = tempUri;
+        } catch (fetchErr) {
+          console.warn("Fast fetch fallback to downloadAsync:", fetchErr);
+          const result = await FileSystem.downloadAsync(uri, tempUri);
+          localUri = result.uri;
+        }
       }
 
-      let assetCreated = false;
       let galleryAssetId = null;
       try {
         const asset = await MediaLibrary.createAssetAsync(localUri);
-        assetCreated = true;
         galleryAssetId = asset.id;
-        const albumName = 'Reverse Image Search';
-        const album = await MediaLibrary.getAlbumAsync(albumName);
-        if (album === null) {
-          await MediaLibrary.createAlbumAsync(albumName, asset, false);
-        } else {
-          await MediaLibrary.addAssetsToAlbumAsync([asset], album, false);
-        }
       } catch (saveErr) {
-        console.warn("Album saving failed:", saveErr);
-        if (!assetCreated) {
-          await MediaLibrary.saveToLibraryAsync(localUri);
-        }
+        console.warn("Fast gallery save fallback:", saveErr);
+        await MediaLibrary.saveToLibraryAsync(localUri);
       }
 
       const aiOriginalName = uri.startsWith('http')
         ? (uri.split('/').pop().split('?')[0] || `ai_art_${Date.now()}.jpg`)
         : `ai_art_${Date.now()}.jpg`;
-      await addSavedDownload(localUri, galleryAssetId, true, aiOriginalName);
+      await addSavedDownload(localUri, galleryAssetId, true, aiOriginalName, 'ai');
       showToast("Image saved successfully!");
     } catch (error) {
       console.error("Save image error:", error);
@@ -158,6 +168,8 @@ export default function AIImageResultScreen({ route, navigation }) {
         "Download Failed",
         "Network drop or error saving AI art. Please try again."
       );
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -173,6 +185,14 @@ export default function AIImageResultScreen({ route, navigation }) {
 
   const [globalLoading, setGlobalLoading] = useState(false);
   const [loadingStage, setLoadingStage] = useState(0);
+  const isFocused = useIsFocused();
+
+  useEffect(() => {
+    if (!isFocused && Platform.OS === 'ios') {
+      setGlobalLoading(false);
+      setPreviewImage(null);
+    }
+  }, [isFocused]);
 
   useEffect(() => {
     if (!globalLoading) {
@@ -224,9 +244,10 @@ export default function AIImageResultScreen({ route, navigation }) {
       if (!isMounted.current || err.name === 'AbortError') return;
       console.error('Text-to-Image Generation error:', err);
       setGlobalLoading(false);
+      const userMessage = getCleanErrorMessage(err);
       Alert.alert(
-        'Generation Error',
-        `Generation failed: ${err.message || 'Please check your connection and try again.'}`
+        'Server Busy',
+        userMessage
       );
       if (navigation) {
         try {
@@ -246,7 +267,9 @@ export default function AIImageResultScreen({ route, navigation }) {
 
   const handleBackToHome = () => {
     if (globalLoading) return;
-    if (navigation) {
+    if (navigation?.canGoBack()) {
+      navigation.goBack();
+    } else {
       try {
         navigation.navigate('Home');
       } catch (_) {
@@ -277,8 +300,8 @@ export default function AIImageResultScreen({ route, navigation }) {
 
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity 
-          style={styles.backBtn} 
+        <TouchableOpacity
+          style={styles.backBtn}
           onPress={handleBackToHome}
         >
           <ArrowLeft size={24} color="#FFF" style={Platform.OS === 'ios' ? { width: 24, height: 24 } : null} />
@@ -327,12 +350,30 @@ export default function AIImageResultScreen({ route, navigation }) {
               setPreviewImage(currentImageUri);
             }
           }}
+          onLongPress={
+            Platform.OS === 'ios'
+              ? () => {
+                  if (!currentImageUri) return;
+                  Alert.alert(
+                    'Save Image',
+                    'Would you like to save this image to your photo gallery?',
+                    [
+                      { text: 'Cancel', style: 'cancel' },
+                      { text: 'Save Image', onPress: () => handleDownloadImage(currentImageUri) },
+                    ]
+                  );
+                }
+              : undefined
+          }
         >
           {globalLoading && iterations.length === 0 ? (
             <ActivityIndicator size="large" color="#ADC7FF" />
           ) : currentImageUri ? (
             <Image
-              source={{ uri: currentImageUri }}
+              source={{
+                uri: currentImageUri,
+                ...(Platform.OS === 'ios' && { cache: 'force-cache' }),
+              }}
               style={styles.mainPreviewImage}
               resizeMode="cover"
             />
@@ -363,7 +404,10 @@ export default function AIImageResultScreen({ route, navigation }) {
                   onPress={() => setSelectedIndex(index)}
                 >
                   <Image
-                    source={{ uri: imgUri }}
+                    source={{
+                      uri: imgUri,
+                      ...(Platform.OS === 'ios' && { cache: 'force-cache' }),
+                    }}
                     style={[
                       styles.variationThumbnail,
                       Platform.OS === 'ios' && {
@@ -447,7 +491,25 @@ export default function AIImageResultScreen({ route, navigation }) {
             <X size={30} color="#FFF" />
           </TouchableOpacity>
           {previewImage && (
-            <Image source={{ uri: previewImage }} style={[styles.modalPreviewImage, { aspectRatio: ratioNumber }]} />
+            <TouchableOpacity
+              activeOpacity={0.9}
+              onLongPress={
+                Platform.OS === 'ios'
+                  ? () => {
+                      Alert.alert(
+                        'Save Image',
+                        'Would you like to save this image to your photo gallery?',
+                        [
+                          { text: 'Cancel', style: 'cancel' },
+                          { text: 'Save Image', onPress: () => handleDownloadImage(previewImage) },
+                        ]
+                      );
+                    }
+                  : undefined
+              }
+            >
+              <Image source={{ uri: previewImage }} style={[styles.modalPreviewImage, { aspectRatio: ratioNumber }]} />
+            </TouchableOpacity>
           )}
         </View>
       </Modal>
@@ -461,11 +523,11 @@ export default function AIImageResultScreen({ route, navigation }) {
               {loadingStage === 0 ? "Sending Request..." : loadingStage === 1 ? "Processing Image..." : "Finalizing Render..."}
             </Text>
             <Text style={styles.loadingStageSubtext}>
-              {loadingStage === 0 
-                ? "Uploading prompt & settings to AI engine..." 
-                : loadingStage === 1 
-                ? "Synthesizing artwork via Vision-X models..." 
-                : "Applying high-res detail & finalizing output..."}
+              {loadingStage === 0
+                ? "Uploading prompt & settings to AI engine..."
+                : loadingStage === 1
+                  ? "Synthesizing artwork..."
+                  : "Applying high-res detail & finalizing output..."}
             </Text>
 
             {/* Step Progress Indicators */}
@@ -473,6 +535,22 @@ export default function AIImageResultScreen({ route, navigation }) {
               <View style={[styles.stepDot, loadingStage >= 0 && styles.stepDotActive]} />
               <View style={[styles.stepDot, loadingStage >= 1 && styles.stepDotActive]} />
               <View style={[styles.stepDot, loadingStage >= 2 && styles.stepDotActive]} />
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Saving / Download Progress Dialogue */}
+      <Modal visible={isSaving} transparent={true} animationType="fade">
+        <View style={styles.modalLoadingOverlay}>
+          <View style={styles.loadingCard}>
+            <ActivityIndicator size="large" color="#ADC7FF" style={{ marginBottom: 16 }} />
+            <Text style={styles.loadingStageTitle}>Saving Image...</Text>
+            <Text style={styles.loadingStageSubtext}>Saving your AI artwork to photo gallery...</Text>
+            <View style={styles.stepDotsRow}>
+              <View style={[styles.stepDot, styles.stepDotActive]} />
+              <View style={[styles.stepDot, styles.stepDotActive]} />
+              <View style={styles.stepDot} />
             </View>
           </View>
         </View>

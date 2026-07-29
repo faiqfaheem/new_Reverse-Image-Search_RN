@@ -19,7 +19,8 @@ import {
 import { Trash2, X, Download, Check, ArrowLeft } from 'lucide-react-native';
 import * as MediaLibrary from 'expo-media-library';
 import * as Sharing from 'expo-sharing';
-import { getSavedDownloads, deleteSavedDownload, deleteMultipleSavedDownloads } from '../utils/downloadManager';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { getSavedDownloads, deleteSavedDownload, deleteMultipleSavedDownloads, formatFileUri } from '../utils/downloadManager';
 import { useFocusEffect } from '@react-navigation/native';
 import AppDrawer from '../components/AppDrawer';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -51,7 +52,7 @@ const formatIOSUri = (path) => {
   return path;
 };
 
-export default function DownloadsScreen({ route, navigation, isTab, onOpenDrawer }) {
+export default function DownloadsScreen({ route, navigation, isTab, onOpenDrawer, onGoToHome }) {
   const insets = useSafeAreaInsets();
   const isAIOnly = route?.params?.isAIOnly ?? false;
   const [images, setImages] = useState([]);
@@ -68,7 +69,7 @@ export default function DownloadsScreen({ route, navigation, isTab, onOpenDrawer
   const [selectedIds, setSelectedIds] = useState([]);
   const [isSelectionMode, setIsSelectionMode] = useState(false);
 
-  const fetchDownloads = async () => {
+  const fetchDownloads = useCallback(async () => {
     try {
       const list = await getSavedDownloads();
       if (isAIOnly) {
@@ -81,43 +82,44 @@ export default function DownloadsScreen({ route, navigation, isTab, onOpenDrawer
     } finally {
       setLoading(false);
     }
-  };
+  }, [isAIOnly]);
 
   useEffect(() => {
     fetchDownloads();
-  }, []);
+  }, [fetchDownloads]);
+
+  const handleBackAction = useCallback(() => {
+    if (previewImage) {
+      setPreviewImage(null);
+      setSelectedAsset(null);
+      return true;
+    }
+    if (isSelectionMode) {
+      setSelectedIds([]);
+      setIsSelectionMode(false);
+      return true;
+    }
+    if (isTab && onGoToHome) {
+      onGoToHome();
+      return true;
+    }
+    if (navigation) {
+      try {
+        navigation.navigate('Home', { tab: 'explore' });
+      } catch (_) {
+        navigation.navigate('HomeScreen', { tab: 'explore' });
+      }
+      return true;
+    }
+    return false;
+  }, [previewImage, isSelectionMode, isTab, onGoToHome, navigation]);
 
   useFocusEffect(
     useCallback(() => {
       fetchDownloads();
-      const backAction = () => {
-        // Priority 1: close image preview
-        if (previewImage) {
-          setPreviewImage(null);
-          setSelectedAsset(null);
-          return true;
-        }
-        // Priority 2: exit multi-select mode
-        if (isSelectionMode) {
-          setSelectedIds([]);
-          setIsSelectionMode(false);
-          return true;
-        }
-        // Priority 3: if opened from Generate AI tab, go back there
-        if (isAIOnly) {
-          if (navigation.canGoBack()) {
-            navigation.goBack();
-          } else {
-            navigation.navigate('AIArtDashboard');
-          }
-          return true;
-        }
-        // Default: let the stack handle it
-        return false;
-      };
-      const subscription = BackHandler.addEventListener('hardwareBackPress', backAction);
+      const subscription = BackHandler.addEventListener('hardwareBackPress', handleBackAction);
       return () => subscription.remove();
-    }, [previewImage, isSelectionMode, isAIOnly, navigation])
+    }, [fetchDownloads, handleBackAction])
   );
 
   const handleShare = async (asset) => {
@@ -197,7 +199,7 @@ export default function DownloadsScreen({ route, navigation, isTab, onOpenDrawer
 
   const renderItem = ({ item }) => {
     const isSelected = selectedIds.includes(item.id);
-    const itemUri = formatIOSUri(item.uri);
+    const itemUri = formatFileUri(item.uri);
     return (
       <TouchableOpacity
         style={[styles.gridItem, isSelected && styles.gridItemSelected]}
@@ -210,10 +212,6 @@ export default function DownloadsScreen({ route, navigation, isTab, onOpenDrawer
           style={[
             styles.gridImage,
             isSelected && styles.gridImageSelected,
-            Platform.OS === 'ios' && {
-              width: Math.round(463 * scale),
-              height: Math.round(808 * scale),
-            },
           ]}
           resizeMode="cover"
         />
@@ -248,15 +246,9 @@ export default function DownloadsScreen({ route, navigation, isTab, onOpenDrawer
       ) : (
         <View style={[styles.header, { height: headerHeight, paddingTop: headerPaddingTop }]}>
           <View style={styles.headerLeftContainer}>
-            {previewImage ? (
-              <TouchableOpacity style={styles.backBtn} onPress={() => { setPreviewImage(null); setSelectedAsset(null); }}>
-                <ArrowLeft size={24} color="#FFF" />
-              </TouchableOpacity>
-            ) : !isTab ? (
-              <TouchableOpacity style={styles.backBtn} onPress={() => navigation?.goBack()}>
-                <ArrowLeft size={24} color="#FFF" />
-              </TouchableOpacity>
-            ) : null}
+            <TouchableOpacity style={styles.backBtn} onPress={handleBackAction}>
+              <ArrowLeft size={24} color="#FFF" />
+            </TouchableOpacity>
             <Text style={styles.headerTitle} numberOfLines={1} ellipsizeMode="tail">
               {previewImage && selectedAsset
                 ? (selectedAsset.originalName || getFilenameFromUri(selectedAsset.uri))
@@ -311,14 +303,8 @@ export default function DownloadsScreen({ route, navigation, isTab, onOpenDrawer
         <View style={styles.modalOverlay}>
           {previewImage && (
             <Image
-              source={{ uri: formatIOSUri(previewImage) }}
-              style={[
-                styles.modalPreviewImage,
-                Platform.OS === 'ios' && {
-                  width: Math.round(991 * scale),
-                  height: Math.round(1787 * scale),
-                },
-              ]}
+              source={{ uri: formatFileUri(previewImage) }}
+              style={styles.modalPreviewImage}
               resizeMode="cover"
             />
           )}
@@ -568,6 +554,7 @@ const styles = StyleSheet.create({
   gridImage: {
     width: '100%',
     height: '100%',
+    aspectRatio: 463 / 808,
     resizeMode: 'cover',
   },
   gridImageSelected: {
@@ -645,10 +632,12 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 41 * scale,
     top: 326 * scale,
-    width: 991 * scale,
-    height: 1787 * scale,
+    width: Math.round(991 * scale),
+    height: Math.round(1787 * scale),
+    aspectRatio: 991 / 1787,
     borderRadius: 53 * scale,
     overflow: 'hidden',
+    resizeMode: 'cover',
   },
   modalActionRow: {
     position: 'absolute',

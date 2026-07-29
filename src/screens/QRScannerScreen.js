@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   View,
   Text,
@@ -15,6 +15,7 @@ import {
   Platform,
   BackHandler,
 } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { ArrowLeft, Copy, Check, RefreshCw, AlertCircle, Camera } from 'lucide-react-native';
 import { addHistoryEntry } from '../utils/historyManager';
@@ -27,6 +28,14 @@ export default function QRScannerScreen({ navigation }) {
   const [scanned, setScanned] = useState(false);
   const [scanResult, setScanResult] = useState('');
   const [copied, setCopied] = useState(false);
+
+  // Reset scan lock only when scanner screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      setScanned(false);
+      setScanResult('');
+    }, [])
+  );
 
   // Hardware Back Handler
   useEffect(() => {
@@ -123,6 +132,7 @@ export default function QRScannerScreen({ navigation }) {
     setScanned(true);
 
     const trimmedData = data.trim();
+    if (!trimmedData) return;
     
     addHistoryEntry('qr', trimmedData);
 
@@ -132,11 +142,6 @@ export default function QRScannerScreen({ navigation }) {
       imageUri: null, 
       fromQR: true 
     });
-
-    // Reset scanner state after a short delay so if they return they can scan again
-    setTimeout(() => {
-      setScanned(false);
-    }, 1500);
   };
 
   const handleCopyToClipboard = () => {
@@ -166,7 +171,20 @@ export default function QRScannerScreen({ navigation }) {
       <CameraView
         style={StyleSheet.absoluteFillObject}
         barcodeScannerSettings={{
-          barcodeTypes: ['qr'],
+          barcodeTypes: [
+            'qr',
+            'ean13',
+            'ean8',
+            'code128',
+            'code39',
+            'upc_a',
+            'upc_e',
+            'datamatrix',
+            'pdf417',
+            'aztec',
+            'codabar',
+            'itf14',
+          ],
         }}
         onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}
       />
@@ -179,7 +197,7 @@ export default function QRScannerScreen({ navigation }) {
             <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
               <ArrowLeft size={24} color="#FFF" />
             </TouchableOpacity>
-            <Text style={styles.headerTitle}>Scan QR Code</Text>
+            <Text style={styles.headerTitle}>Scan QR & Barcode</Text>
             <View style={{ width: 40 }} />
           </SafeAreaView>
         </View>
@@ -212,7 +230,7 @@ export default function QRScannerScreen({ navigation }) {
         {/* Bottom Dark Bar */}
         <View style={[styles.darkOverlay, styles.bottomOverlay]}>
           <Text style={styles.hintText}>
-            Align the QR code within the frame to scan
+            Align the QR code or Barcode within the frame to scan
           </Text>
         </View>
       </View>

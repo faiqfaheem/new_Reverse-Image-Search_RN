@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   StyleSheet,
   View,
@@ -12,6 +12,7 @@ import {
   TouchableOpacity,
   Image,
   Platform,
+  BackHandler,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -47,6 +48,19 @@ const FeatureRow = ({ feature, basic, pro, iconSource }) => (
 
 export default function PremiumVIPScreen({ navigation }) {
   const insets = useSafeAreaInsets();
+
+  // Explicit hardware back handler — goBack() to previous screen
+  useEffect(() => {
+    const sub = BackHandler.addEventListener('hardwareBackPress', () => {
+      if (navigation?.canGoBack()) {
+        navigation.goBack();
+      } else {
+        navigation.navigate('Home');
+      }
+      return true;
+    });
+    return () => sub.remove();
+  }, [navigation]);
 
   const handleStartTrial = () => {
     // Basic navigation logic to bypass to Home for now

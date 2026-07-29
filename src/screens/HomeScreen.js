@@ -18,7 +18,7 @@ import {
   BackHandler,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
 import {
@@ -87,6 +87,15 @@ export default function HomeScreen({ route, onSearch, navigation }) {
   const [isListeningModalVisible, setIsListeningModalVisible] = useState(false);
   const [isInputInvalid, setIsInputInvalid] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const isFocused = useIsFocused();
+
+  useEffect(() => {
+    if (!isFocused && Platform.OS === 'ios') {
+      setIsListeningModalVisible(false);
+      setIsDrawerOpen(false);
+      setIsListening(false);
+    }
+  }, [isFocused]);
 
   useEffect(() => {
     if (route?.params?.triggerAction) {
@@ -187,43 +196,45 @@ export default function HomeScreen({ route, onSearch, navigation }) {
   useEffect(() => { activeTabRef.current = activeTab; }, [activeTab]);
 
   // Intercept hardware back button globally across all states
-  useEffect(() => {
-    const onBackPress = () => {
-      // 1. If Image Editor is open -> close editor & return to Home
-      if (Boolean(editorUriRef.current)) {
-        setEditorUri(null);
-        setImageUri(null);
-        setActiveTool(null);
-        setCropMode(false);
-        return true; // Prevents app exit!
-      }
+  useFocusEffect(
+    useCallback(() => {
+      const onBackPress = () => {
+        // 1. If Image Editor is open -> close editor & return to Home
+        if (Boolean(editorUriRef.current)) {
+          setEditorUri(null);
+          setImageUri(null);
+          setActiveTool(null);
+          setCropMode(false);
+          return true; // Prevents app exit!
+        }
 
-      // 2. If Cropper overlay is active -> close crop mode
-      if (cropModeRef.current) {
-        setCropMode(false);
+        // 2. If Cropper overlay is active -> close crop mode
+        if (cropModeRef.current) {
+          setCropMode(false);
+          return true;
+        }
+
+        // 3. If side drawer is open -> close drawer
+        if (isDrawerOpenRef.current) {
+          setIsDrawerOpen(false);
+          return true;
+        }
+
+        // 4. If on sub-tabs (AI, History, Downloads) -> return to Explore Home tab
+        if (activeTabRef.current !== 'explore') {
+          setActiveTab('explore');
+          return true;
+        }
+
+        // 5. On Explore Home screen -> exit app cleanly
+        BackHandler.exitApp();
         return true;
-      }
+      };
 
-      // 3. If side drawer is open -> close drawer
-      if (isDrawerOpenRef.current) {
-        setIsDrawerOpen(false);
-        return true;
-      }
-
-      // 4. If on sub-tabs (AI, History, Downloads) -> return to Explore Home tab
-      if (activeTabRef.current !== 'explore') {
-        setActiveTab('explore');
-        return true;
-      }
-
-      // 5. On Explore Home screen -> exit app cleanly
-      BackHandler.exitApp();
-      return true;
-    };
-
-    const backSubscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
-    return () => backSubscription.remove();
-  }, []);
+      const backSubscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+      return () => backSubscription.remove();
+    }, [])
+  );
 
   const cropBoxRef = useRef(cropBox);
   const containerSizeRef = useRef({ width: 300, height: 300 });
@@ -620,7 +631,12 @@ export default function HomeScreen({ route, onSearch, navigation }) {
             {/* ── Dark Header Bar ── */}
             <View style={styles.exploreHeader}>
               <View style={styles.exploreHeaderLeft}>
-                <TouchableOpacity style={styles.exploreMenuBtn} onPress={() => setIsDrawerOpen(true)}>
+                <TouchableOpacity
+                  style={styles.exploreMenuBtn}
+                  onPress={() => setIsDrawerOpen(true)}
+                  hitSlop={{ top: 30, bottom: 30, left: 30, right: 30 }}
+                  activeOpacity={0.7}
+                >
                   <View style={styles.customMenuLine} />
                   <View style={styles.customMenuLine} />
                   <View style={[styles.customMenuLine, styles.customMenuLineShort]} />
@@ -667,14 +683,22 @@ export default function HomeScreen({ route, onSearch, navigation }) {
                   }}
                 />
                 <TextInput
-                  style={[styles.inputOverlay, isInputInvalid && styles.inputInvalidOverlay]}
-                  placeholder={isListening ? "Listening..." : "Upload and Search"}
-                  placeholderTextColor="#9AA0A6"
                   value={searchText}
                   onChangeText={(text) => {
                     setSearchText(text);
                     if (text.trim()) setIsInputInvalid(false);
                   }}
+                  placeholder={isListening ? "Listening..." : ""}
+                  placeholderTextColor="#9AA0A6"
+                  style={[
+                    styles.inputOverlay,
+                    isInputInvalid && styles.inputInvalidOverlay,
+                    (Boolean(searchText && searchText.trim() !== '') || isListening) && styles.inputActiveBackground,
+                    Platform.OS === 'ios' && {
+                      lineHeight: 20, // Prevents text offset and shadow stacking on iOS
+                      paddingVertical: 8,
+                    },
+                  ]}
                   onSubmitEditing={() => {
                     if (searchText.trim()) {
                       addHistoryEntry('text', searchText.trim());
@@ -686,6 +710,10 @@ export default function HomeScreen({ route, onSearch, navigation }) {
                     }
                   }}
                 />
+                {/* Render custom overlay layer ONLY if the input value is strictly empty */}
+                {(!searchText || searchText.trim() === '') && (
+                  <View pointerEvents="none" style={styles.customOverlayWrapper} />
+                )}
                 <TouchableOpacity style={styles.micButtonOverlay} onPress={handleMicPress} />
                 <TouchableOpacity
                   style={styles.cameraButtonOverlay}
@@ -743,6 +771,7 @@ export default function HomeScreen({ route, onSearch, navigation }) {
             navigation={navigation}
             isTab={true}
             onOpenDrawer={() => setIsDrawerOpen(true)}
+            onGoToHome={() => setActiveTab('explore')}
           />
         )}
 
@@ -751,6 +780,7 @@ export default function HomeScreen({ route, onSearch, navigation }) {
             navigation={navigation}
             isTab={true}
             onOpenDrawer={() => setIsDrawerOpen(true)}
+            onGoToHome={() => setActiveTab('explore')}
           />
         )}
 
@@ -760,6 +790,7 @@ export default function HomeScreen({ route, onSearch, navigation }) {
             navigation={navigation}
             isTab={true}
             onOpenDrawer={() => setIsDrawerOpen(true)}
+            onGoToHome={() => setActiveTab('explore')}
           />
         )}
       </View>
@@ -1001,6 +1032,19 @@ const styles = StyleSheet.create({
     borderColor: '#EF4444',
     borderWidth: 1.5 * scale,
     borderRadius: 10 * scale,
+  },
+  inputActiveBackground: {
+    backgroundColor: '#1E1F24',
+    borderRadius: 8 * scale,
+  },
+  customOverlayWrapper: {
+    position: 'absolute',
+    left: 130 * scale,
+    top: 8 * scale,
+    width: 570 * scale,
+    height: (147.57 - 16) * scale,
+    justifyContent: 'center',
+    zIndex: 15,
   },
   micButtonOverlay: {
     position: 'absolute',

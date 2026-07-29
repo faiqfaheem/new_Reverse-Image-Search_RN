@@ -13,6 +13,7 @@ import {
   Image,
   PermissionsAndroid,
   Platform,
+  BackHandler,
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import PermissionLogo from '../components/PermissionLogo';
@@ -129,6 +130,9 @@ export default function PermissionScreen({ onPermissionsGranted, navigation }) {
   };
 
   useEffect(() => {
+    // Block hardware back button during permission flow — user must grant permissions
+    const backSub = BackHandler.addEventListener('hardwareBackPress', () => true);
+
     // Initial check on launch
     syncAndCheck(true);
 
@@ -141,6 +145,7 @@ export default function PermissionScreen({ onPermissionsGranted, navigation }) {
     });
 
     return () => {
+      backSub.remove();
       subscription.remove();
     };
   }, []);

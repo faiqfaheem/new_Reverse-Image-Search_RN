@@ -15,6 +15,7 @@ import {
   Image,
   BackHandler,
   Dimensions,
+  InteractionManager,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { ArrowLeft, ArrowRight, ChevronDown, ChevronUp, Plus, X } from 'lucide-react-native';
@@ -39,6 +40,19 @@ const STYLE_TEMPLATES = [
   { id: 'photographic', name: 'Photographic', image: require('../components/tempelates/Gemini_Generated_Image_r3ofd2r3ofd2r3of.png'), style_preset: 'photographic' },
   { id: 'pixel-art', name: 'Pixel Art', image: require('../components/tempelates/Gemini_Generated_Image_pozup3pozup3pozu.jpg'), style_preset: 'pixel-art' }
 ];
+
+if (Platform.OS === 'ios') {
+  STYLE_TEMPLATES.forEach((tpl) => {
+    try {
+      if (tpl.image) {
+        const resolved = Image.resolveAssetSource(tpl.image);
+        if (resolved && resolved.uri) {
+          Image.prefetch(resolved.uri);
+        }
+      }
+    } catch (_) {}
+  });
+}
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const scale = SCREEN_WIDTH / 1080;
@@ -115,7 +129,24 @@ export default function AIImageScreen({ navigation }) {
 
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backBtn} onPress={() => navigation?.goBack()}>
+        <TouchableOpacity 
+          style={styles.backBtn} 
+          onPress={() => {
+            if (Platform.OS === 'ios') {
+              try {
+                navigation?.navigate('Home');
+              } catch (_) {
+                navigation?.navigate('HomeScreen');
+              }
+            } else {
+              if (navigation?.canGoBack()) {
+                navigation.goBack();
+              } else {
+                navigation?.navigate('Home');
+              }
+            }
+          }}
+        >
           <ArrowLeft size={24} color="#FFF" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Chat With AI</Text>
