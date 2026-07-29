@@ -11,11 +11,7 @@ export default function SplashScreen() {
     <View style={styles.container}>
       {/* Logo — Group 110.png at X:340, Y:921, W:401, H:385.37 */}
       <Image
-        source={
-          Platform.OS === 'ios'
-            ? Image.resolveAssetSource(require('../components/group_110.png'))
-            : require('../components/Group 110.png')
-        }
+        source={require('../components/group_110.png')}
         style={styles.logo}
         resizeMode="contain"
       />

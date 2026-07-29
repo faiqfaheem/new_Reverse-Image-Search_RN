@@ -542,11 +542,7 @@ export default function HomeScreen({ route, onSearch, navigation }) {
             disabled={busy}
           >
             <Image
-              source={
-                Platform.OS === 'ios'
-                  ? Image.resolveAssetSource(require('../components/group_46.png'))
-                  : require('../components/Group 46.png')
-              }
+              source={require('../components/group_46.png')}
               style={[
                 styles.editorTabIcon,
                 activeTool === 'crop' && { tintColor: '#007AFF' },
@@ -563,11 +559,7 @@ export default function HomeScreen({ route, onSearch, navigation }) {
             disabled={busy}
           >
             <Image
-              source={
-                Platform.OS === 'ios'
-                  ? Image.resolveAssetSource(require('../components/vector_1.png'))
-                  : require('../components/Vector (1).png')
-              }
+              source={require('../components/vector_1.png')}
               style={[
                 styles.editorTabIcon,
                 activeTool === 'rotate' && { tintColor: '#007AFF' },
@@ -584,11 +576,7 @@ export default function HomeScreen({ route, onSearch, navigation }) {
             disabled={busy}
           >
             <Image
-              source={
-                Platform.OS === 'ios'
-                  ? Image.resolveAssetSource(require('../components/vector_2.png'))
-                  : require('../components/Vector (2).png')
-              }
+              source={require('../components/vector_2.png')}
               style={[
                 styles.editorTabIconFlip,
                 activeTool === 'flip_v' && { tintColor: '#007AFF' },
@@ -605,11 +593,7 @@ export default function HomeScreen({ route, onSearch, navigation }) {
             disabled={busy}
           >
             <Image
-              source={
-                Platform.OS === 'ios'
-                  ? Image.resolveAssetSource(require('../components/vector_3.png'))
-                  : require('../components/Vector (3).png')
-              }
+              source={require('../components/vector_3.png')}
               style={[
                 styles.editorTabIconFlipV,
                 activeTool === 'flip_h' && { tintColor: '#007AFF' },
@@ -663,7 +647,7 @@ export default function HomeScreen({ route, onSearch, navigation }) {
               {/* Search Bar */}
               <View style={styles.searchContainer}>
                 <Image
-                  source={require('../components/Group 1000007000.png')}
+                  source={require('../components/group_1000007000.png')}
                   style={styles.searchBackground}
                   resizeMode="stretch"
                 />
@@ -715,7 +699,7 @@ export default function HomeScreen({ route, onSearch, navigation }) {
                 onPress={() => acquireImage('gallery')}
               >
                 <Image
-                  source={require('../components/Group 1000006996.png')}
+                  source={require('../components/group_1000006996.png')}
                   style={styles.actionBtnImage}
                   resizeMode="stretch"
                 />
@@ -725,14 +709,14 @@ export default function HomeScreen({ route, onSearch, navigation }) {
               <View style={styles.buttonRow}>
                 <TouchableOpacity style={styles.squareBtn} onPress={() => acquireImage('camera')}>
                   <Image
-                    source={require('../components/Group 1000006997.png')}
+                    source={require('../components/group_1000006997.png')}
                     style={styles.actionBtnImage}
                     resizeMode="stretch"
                   />
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.squareBtn} onPress={() => setActiveTab('generate_ai')}>
                   <Image
-                    source={require('../components/Group 1000006998.png')}
+                    source={require('../components/group_1000006998.png')}
                     style={styles.actionBtnImage}
                     resizeMode="stretch"
                   />
@@ -745,7 +729,7 @@ export default function HomeScreen({ route, onSearch, navigation }) {
                 onPress={() => navigation?.navigate('QRScanner')}
               >
                 <Image
-                  source={require('../components/Group 1000007001.png')}
+                  source={require('../components/group_1000007001.png')}
                   style={styles.actionBtnImage}
                   resizeMode="stretch"
                 />
@@ -1009,9 +993,8 @@ const styles = StyleSheet.create({
     height: (147.57 - 16) * scale,
     color: '#FFF',
     fontSize: 40 * scale,
-    backgroundColor: '#282a2e',
+    backgroundColor: 'transparent',
     paddingHorizontal: 10 * scale,
-    fontFamily: 'Inter',
     zIndex: 20,
   },
   inputInvalidOverlay: {

@@ -30,16 +30,16 @@ const FeatureRow = ({ feature, basic, pro, iconSource }) => (
     </View>
     <View style={[styles.flex1, styles.centerContent]}>
       {basic === 'check' ? (
-        <Image source={require('../components/Vector (4).png')} style={styles.statusIcon} />
+        <Image source={require('../components/vector_4.png')} style={styles.statusIcon} />
       ) : (
-        <Image source={require('../components/Vector (5).png')} style={styles.crossIcon} />
+        <Image source={require('../components/vector_5.png')} style={styles.crossIcon} />
       )}
     </View>
     <View style={[styles.flex1, styles.centerContent]}>
       {pro === 'check' ? (
-        <Image source={require('../components/Vector (4).png')} style={styles.statusIcon} />
+        <Image source={require('../components/vector_4.png')} style={styles.statusIcon} />
       ) : (
-        <Image source={require('../components/Vector (5).png')} style={styles.crossIcon} />
+        <Image source={require('../components/vector_5.png')} style={styles.crossIcon} />
       )}
     </View>
   </View>
@@ -68,11 +68,11 @@ export default function PremiumVIPScreen({ navigation }) {
 
         {/* Background Collage */}
         <Image
-          source={require('../components/Dynamic Image Collage.png')}
+          source={require('../components/dynamic_image_collage.png')}
           style={styles.collageImage}
         />
         <Image
-          source={require('../components/Dynamic Image Collage_mask-group (2).png')}
+          source={require('../components/dynamic_image_collage_mask-group_2.png')}
           style={styles.collageImageRight}
         />
 
@@ -99,7 +99,7 @@ export default function PremiumVIPScreen({ navigation }) {
             feature="Find or Create Images"
             basic="check"
             pro="check"
-            iconSource={require('../components/Group 1000006994.png')}
+            iconSource={require('../components/group_1000006994.png')}
           />
           <FeatureRow
             feature="AI Image Generator"
@@ -117,13 +117,13 @@ export default function PremiumVIPScreen({ navigation }) {
             feature="Premium Support"
             basic="cross"
             pro="check"
-            iconSource={require('../components/Vector (6).png')}
+            iconSource={require('../components/vector_6.png')}
           />
           <FeatureRow
             feature="AD-free Experience"
             basic="cross"
             pro="check"
-            iconSource={require('../components/Group (1).png')}
+            iconSource={require('../components/group_1.png')}
           />
         </View>
 

@@ -448,11 +448,7 @@ export default function PermissionScreen({ onPermissionsGranted, navigation }) {
                 >
                   {granted ? (
                     <Image
-                      source={
-                        Platform.OS === 'ios'
-                          ? Image.resolveAssetSource(require('../components/vector_tick_2.png'))
-                          : require('../components/Vector tick(2).png')
-                      }
+                      source={require('../components/vector_tick_2.png')}
                       style={[
                         { width: 32.59 * scale, height: 23.28 * scale, resizeMode: 'contain' },
                         Platform.OS === 'ios' && {
@@ -463,11 +459,7 @@ export default function PermissionScreen({ onPermissionsGranted, navigation }) {
                     />
                   ) : (
                     <Image
-                      source={
-                        Platform.OS === 'ios'
-                          ? Image.resolveAssetSource(require('../components/vector_cross_1.png'))
-                          : require('../components/Vector (cross) (1).png')
-                      }
+                      source={require('../components/vector_cross_1.png')}
                       style={[
                         { width: iconSize, height: iconSize, resizeMode: 'contain' },
                         Platform.OS === 'ios' && {

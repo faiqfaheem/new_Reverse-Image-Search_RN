@@ -23,23 +23,17 @@ const onboardingSlides = [
   {
     title: "See the Unseen",
     desc: "Our advanced AI visual search engine identifies objects and art styles in seconds.",
-    image: Platform.OS === 'ios'
-      ? require('../components/hero_illustration_container.png')
-      : require('../components/Hero Illustration Container.png')
+    image: require('../components/hero_illustration_container.png')
   },
   {
     title: "Create with AI",
     desc: "Turn simple descriptions into museum-quality digital art using our specialized Vision-X models.",
-    image: Platform.OS === 'ios'
-      ? require('../components/hero_graphic_container_margin.png')
-      : require('../components/Hero Graphic Container_margin.png')
+    image: require('../components/hero_graphic_container_margin.png')
   },
   {
     title: "Your Creative Hub",
     desc: "Manage projects, store your gallery, and explore trending styles from the global community.",
-    image: Platform.OS === 'ios'
-      ? require('../components/tool_space_visualization_margin.png')
-      : require('../components/3D Tool Space Visualization_margin.png')
+    image: require('../components/tool_space_visualization_margin.png')
   }
 ];
 
@@ -117,15 +111,11 @@ export default function OnboardingScreen({ navigation }) {
           style={styles.scrollView}
         >
           {onboardingSlides.map((slide, index) => {
-            const resolvedSource = Platform.OS === 'ios'
-              ? Image.resolveAssetSource(slide.image)
-              : slide.image;
-
             return (
               <View key={index} style={styles.slideContainer}>
                 <View style={styles.graphicContainer}>
                   <Image
-                    source={resolvedSource}
+                    source={slide.image}
                     style={[
                       styles.illustrationImage,
                       Platform.OS === 'ios' && {

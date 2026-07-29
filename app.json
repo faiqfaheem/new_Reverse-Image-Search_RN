@@ -15,7 +15,7 @@
         "NSPhotoLibraryUsageDescription": "Allow this app to access your photos to select images for visual search.",
         "NSPhotoLibraryAddUsageDescription": "Allow this app to save downloaded images to your photo gallery."
       },
-      "bundleIdentifier": "com.yourname.reverseimagesearchapp"
+      "bundleIdentifier": "com.viberay.reverseimagesearchapp"
     },
     "icon": "./assets/icon.png",
     "splash": {

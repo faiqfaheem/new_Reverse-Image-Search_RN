@@ -360,11 +360,7 @@ export default function HistoryScreen({ route, navigation, isTab, onOpenDrawer }
         <View style={styles.bottomBar}>
           <TouchableOpacity style={styles.bottomTab} onPress={() => navigation.navigate('Home')}>
             <Image
-              source={
-                Platform.OS === 'ios'
-                  ? Image.resolveAssetSource(require('../components/si_ai-search-fill.png'))
-                  : require('../components/si_ai-search-fill.png')
-              }
+              source={require('../components/si_ai-search-fill.png')}
               style={[
                 styles.bottomTabIcon,
                 { tintColor: '#A0A3BD' },
@@ -376,11 +372,7 @@ export default function HistoryScreen({ route, navigation, isTab, onOpenDrawer }
 
           <TouchableOpacity style={styles.bottomTab} onPress={() => navigation.navigate('AIArtDashboard')}>
             <Image
-              source={
-                Platform.OS === 'ios'
-                  ? Image.resolveAssetSource(require('../components/mingcute_ai-fill.png'))
-                  : require('../components/mingcute_ai-fill.png')
-              }
+              source={require('../components/mingcute_ai-fill.png')}
               style={[
                 styles.bottomTabIcon,
                 { tintColor: '#A0A3BD' },
@@ -392,11 +384,7 @@ export default function HistoryScreen({ route, navigation, isTab, onOpenDrawer }
 
           <TouchableOpacity style={styles.bottomTab} onPress={() => { }}>
             <Image
-              source={
-                Platform.OS === 'ios'
-                  ? Image.resolveAssetSource(require('../components/material-symbols_history-rounded.png'))
-                  : require('../components/material-symbols_history-rounded.png')
-              }
+              source={require('../components/material-symbols_history-rounded.png')}
               style={[
                 styles.bottomTabIcon,
                 { tintColor: '#007AFF' },
@@ -408,11 +396,7 @@ export default function HistoryScreen({ route, navigation, isTab, onOpenDrawer }
 
           <TouchableOpacity style={styles.bottomTab} onPress={() => navigation.navigate('Downloads')}>
             <Image
-              source={
-                Platform.OS === 'ios'
-                  ? Image.resolveAssetSource(require('../components/material-symbols_download-rounded.png'))
-                  : require('../components/material-symbols_download-rounded.png')
-              }
+              source={require('../components/material-symbols_download-rounded.png')}
               style={[
                 styles.bottomTabIcon,
                 { tintColor: '#A0A3BD' },

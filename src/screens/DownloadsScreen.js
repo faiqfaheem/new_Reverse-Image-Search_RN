@@ -330,11 +330,7 @@ export default function DownloadsScreen({ route, navigation, isTab, onOpenDrawer
         <View style={styles.bottomBar}>
           <TouchableOpacity style={styles.bottomTab} onPress={() => navigation?.navigate('Home')}>
             <Image
-              source={
-                Platform.OS === 'ios'
-                  ? Image.resolveAssetSource(require('../components/si_ai-search-fill.png'))
-                  : require('../components/si_ai-search-fill.png')
-              }
+              source={require('../components/si_ai-search-fill.png')}
               style={[
                 styles.exploreIcon,
                 Platform.OS === 'ios' && { width: Math.round(50 * scale), height: Math.round(50 * scale) },
@@ -345,11 +341,7 @@ export default function DownloadsScreen({ route, navigation, isTab, onOpenDrawer
 
           <TouchableOpacity style={styles.bottomTab} onPress={() => navigation?.navigate('AIArtDashboard')}>
             <Image
-              source={
-                Platform.OS === 'ios'
-                  ? Image.resolveAssetSource(require('../components/mingcute_ai-fill.png'))
-                  : require('../components/mingcute_ai-fill.png')
-              }
+              source={require('../components/mingcute_ai-fill.png')}
               style={[
                 styles.generateAiIcon,
                 Platform.OS === 'ios' && { width: Math.round(50 * scale), height: Math.round(50 * scale) },
@@ -360,11 +352,7 @@ export default function DownloadsScreen({ route, navigation, isTab, onOpenDrawer
 
           <TouchableOpacity style={styles.bottomTab} onPress={() => navigation?.navigate('History')}>
             <Image
-              source={
-                Platform.OS === 'ios'
-                  ? Image.resolveAssetSource(require('../components/material-symbols_history-rounded.png'))
-                  : require('../components/material-symbols_history-rounded.png')
-              }
+              source={require('../components/material-symbols_history-rounded.png')}
               style={[
                 styles.historyIcon,
                 Platform.OS === 'ios' && { width: Math.round(50 * scale), height: Math.round(50 * scale) },
@@ -375,11 +363,7 @@ export default function DownloadsScreen({ route, navigation, isTab, onOpenDrawer
 
           <TouchableOpacity style={styles.bottomTab} onPress={() => { }}>
             <Image
-              source={
-                Platform.OS === 'ios'
-                  ? Image.resolveAssetSource(require('../components/material-symbols_download-rounded.png'))
-                  : require('../components/material-symbols_download-rounded.png')
-              }
+              source={require('../components/material-symbols_download-rounded.png')}
               style={[
                 styles.downloadIcon,
                 Platform.OS === 'ios' && { width: Math.round(50 * scale), height: Math.round(50 * scale) },

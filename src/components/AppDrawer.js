@@ -204,7 +204,7 @@ function AppDrawerInner({ isOpen, onClose, navigation }) {
               ]}
             >
               <Image
-                source={require('./Group 110.png')}
+                source={require('./group_110.png')}
                 style={styles.drawerHeaderLogo}
                 resizeMode="contain"
               />
@@ -237,7 +237,7 @@ function AppDrawerInner({ isOpen, onClose, navigation }) {
               <TouchableOpacity style={styles.drawerMenuItem} onPress={() => { handleClose(); navigation.navigate('QRScanner'); }}>
                 <View style={styles.menuIconSlot}>
                   <Image
-                    source={require('./Group 215.png')}
+                    source={require('./group_215.png')}
                     style={styles.menuPngIcon}
                     resizeMode="contain"
                   />
@@ -248,7 +248,7 @@ function AppDrawerInner({ isOpen, onClose, navigation }) {
               <TouchableOpacity style={styles.drawerMenuItem} onPress={() => { handleClose(); navigation.navigate('Downloads'); }}>
                 <View style={styles.menuIconSlot}>
                   <Image
-                    source={require('./drawer dwnld.png')}
+                    source={require('./drawer_dwnld.png')}
                     style={styles.menuPngIcon}
                     resizeMode="contain"
                   />
@@ -280,7 +280,7 @@ function AppDrawerInner({ isOpen, onClose, navigation }) {
               <TouchableOpacity style={styles.drawerMenuItem} onPress={() => { setSelectedRating(0); setIsRateModalVisible(true); }}>
                 <View style={styles.menuIconSlot}>
                   <Image
-                    source={require('./Vector (6).png')}
+                    source={require('./vector_6.png')}
                     style={styles.menuPngIconRateUs}
                     resizeMode="contain"
                   />
@@ -294,7 +294,7 @@ function AppDrawerInner({ isOpen, onClose, navigation }) {
               <TouchableOpacity style={styles.drawerMenuItem} onPress={() => { setIsPrivacyVisible(true); }}>
                 <View style={styles.menuIconSlot}>
                   <Image
-                    source={require('./Vector (7).png')}
+                    source={require('./vector_7.png')}
                     style={styles.menuPngIcon}
                     resizeMode="contain"
                   />

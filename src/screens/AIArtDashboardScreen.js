@@ -99,11 +99,7 @@ export default function AIArtDashboardScreen({ navigation, isTab, onOpenDrawer }
         {/* Hero Galaxy Image */}
         <View style={styles.heroContainer}>
           <Image
-            source={
-              Platform.OS === 'ios'
-                ? Image.resolveAssetSource(require('../components/mask_group.png'))
-                : require('../components/Mask group.png')
-            }
+            source={require('../components/mask_group.png')}
             style={[
               styles.heroImage,
               Platform.OS === 'ios' && {
@@ -131,11 +127,7 @@ export default function AIArtDashboardScreen({ navigation, isTab, onOpenDrawer }
             activeOpacity={0.75}
           >
             <Image
-              source={
-                Platform.OS === 'ios'
-                  ? Image.resolveAssetSource(require('../components/Background.png'))
-                  : require('../components/Background.png')
-              }
+              source={require('../components/Background.png')}
               style={[styles.iconBox, Platform.OS === 'ios' && { width: 46, height: 46 }]}
               resizeMode="contain"
             />
@@ -147,11 +139,7 @@ export default function AIArtDashboardScreen({ navigation, isTab, onOpenDrawer }
               </View>
             </View>
             <Image
-              source={
-                Platform.OS === 'ios'
-                  ? Image.resolveAssetSource(require('../components/arrow.png'))
-                  : require('../components/arrow.png')
-              }
+              source={require('../components/arrow.png')}
               style={{ width: 18, height: 18 }}
               resizeMode="contain"
             />
@@ -164,11 +152,7 @@ export default function AIArtDashboardScreen({ navigation, isTab, onOpenDrawer }
             activeOpacity={0.75}
           >
             <Image
-              source={
-                Platform.OS === 'ios'
-                  ? Image.resolveAssetSource(require('../components/Background2.png'))
-                  : require('../components/Background2.png')
-              }
+              source={require('../components/Background2.png')}
               style={[styles.iconBox, Platform.OS === 'ios' && { width: 46, height: 46 }]}
               resizeMode="contain"
             />
@@ -180,11 +164,7 @@ export default function AIArtDashboardScreen({ navigation, isTab, onOpenDrawer }
               </View>
             </View>
             <Image
-              source={
-                Platform.OS === 'ios'
-                  ? Image.resolveAssetSource(require('../components/arrow.png'))
-                  : require('../components/arrow.png')
-              }
+              source={require('../components/arrow.png')}
               style={{ width: 18, height: 18 }}
               resizeMode="contain"
             />
@@ -197,11 +177,7 @@ export default function AIArtDashboardScreen({ navigation, isTab, onOpenDrawer }
             activeOpacity={0.75}
           >
             <Image
-              source={
-                Platform.OS === 'ios'
-                  ? Image.resolveAssetSource(require('../components/Background1.png'))
-                  : require('../components/Background1.png')
-              }
+              source={require('../components/Background1.png')}
               style={[styles.iconBox, Platform.OS === 'ios' && { width: 46, height: 46 }]}
               resizeMode="contain"
             />
@@ -210,11 +186,7 @@ export default function AIArtDashboardScreen({ navigation, isTab, onOpenDrawer }
               <Text style={styles.cardSubtitle}>Access your creations</Text>
             </View>
             <Image
-              source={
-                Platform.OS === 'ios'
-                  ? Image.resolveAssetSource(require('../components/arrow.png'))
-                  : require('../components/arrow.png')
-              }
+              source={require('../components/arrow.png')}
               style={{ width: 18, height: 18 }}
               resizeMode="contain"
             />

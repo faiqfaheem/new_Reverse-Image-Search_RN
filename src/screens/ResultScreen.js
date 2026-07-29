@@ -821,11 +821,7 @@ export default function ResultScreen({ searchQuery: propSearchQuery, imageUri: p
           : { bottom: Math.max(insets.bottom, 0) }
       ]}>
         <Image
-          source={
-            Platform.OS === 'ios'
-              ? Image.resolveAssetSource(require('../components/rectangle_71.png'))
-              : require('../components/Rectangle 71.png')
-          }
+          source={require('../components/rectangle_71.png')}
           style={[
             styles.bottomTabBarBg,
             Platform.OS === 'ios' && {
@@ -845,11 +841,7 @@ export default function ResultScreen({ searchQuery: propSearchQuery, imageUri: p
             >
               {isActive && (
                 <Image
-                  source={
-                    Platform.OS === 'ios'
-                      ? Image.resolveAssetSource(require('../components/rectangle_108.png'))
-                      : require('../components/Rectangle 108.png')
-                  }
+                  source={require('../components/rectangle_108.png')}
                   style={[
                     styles.activeRectangleBg,
                     Platform.OS === 'ios' && {
