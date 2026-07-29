@@ -24,7 +24,7 @@
       "backgroundColor": "#131313"
     },
     "android": {
-      "package": "com.yourname.reverseimagesearchapp",
+      "package": "com.viberay.reverseimagesearchapp",
       "jsEngine": "hermes",
       "splash": {
         "backgroundColor": "#131313",

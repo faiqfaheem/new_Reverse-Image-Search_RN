@@ -27,7 +27,7 @@
       <dict>
         <key>CFBundleURLSchemes</key>
         <array>
-          <string>com.yourname.reverseimagesearchapp</string>
+          <string>com.viberay.reverseimagesearchapp</string>
         </array>
       </dict>
     </array>

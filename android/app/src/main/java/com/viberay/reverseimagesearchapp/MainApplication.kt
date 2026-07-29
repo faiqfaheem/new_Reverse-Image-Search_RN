@@ -1,4 +1,4 @@
-package com.yourname.reverseimagesearchapp
+package com.viberay.reverseimagesearchapp
 
 import android.app.Application
 import android.content.res.Configuration
