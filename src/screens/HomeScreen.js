@@ -286,9 +286,18 @@ export default function HomeScreen({ route, onSearch, navigation }) {
         return true;
       };
 
-      const backSubscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
-      return () => backSubscription.remove();
-    }, [])
+      let backSubscription;
+      const timeoutId = setTimeout(() => {
+        backSubscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+      }, 0);
+      
+      return () => {
+        clearTimeout(timeoutId);
+        if (backSubscription) {
+          backSubscription.remove();
+        }
+      };
+    }, [activeTab])
   );
 
   const cropBoxRef = useRef(cropBox);
