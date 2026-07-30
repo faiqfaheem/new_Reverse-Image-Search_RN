@@ -23,22 +23,22 @@ import { checkUsageLimit, incrementUsage } from '../utils/usageLimitManager';
 
 // TODO: Fetch styles dynamically from a backend
 const STYLE_TEMPLATES = [
-  { id: '3d-model', name: '3D Model', image: require('../components/tempelates/Gemini_Generated_Image_70aaxu70aaxu70aa.png'), style_preset: '3d-model' },
-  { id: 'analog-film', name: 'Analog Film', image: require('../components/tempelates/Gemini_Generated_Image_kmg9m5kmg9m5kmg9.jpg'), style_preset: 'analog-film' },
-  { id: 'anime', name: 'Anime', image: require('../components/tempelates/Gemini_Generated_Image_nrj5dynrj5dynrj5.png'), style_preset: 'anime' },
-  { id: 'cinematic', name: 'Cinematic', image: require('../components/tempelates/Gemini_Generated_Image_gc0u7lgc0u7lgc0u.png'), style_preset: 'cinematic' },
-  { id: 'comic-book', name: 'Comic Book', image: require('../components/tempelates/Gemini_Generated_Image_toi8jctoi8jctoi8.png'), style_preset: 'comic-book' },
-  { id: 'digital-art', name: 'Digital Art', image: require('../components/tempelates/Gemini_Generated_Image_8vv98b8vv98b8vv9.png'), style_preset: 'digital-art' },
-  { id: 'enhance', name: 'Enhance', image: require('../components/tempelates/Gemini_Generated_Image_8y9c5m8y9c5m8y9c.png'), style_preset: 'enhance' },
-  { id: 'fantasy-art', name: 'Fantasy Art', image: require('../components/tempelates/Gemini_Generated_Image_dhq5ncdhq5ncdhq5.png'), style_preset: 'fantasy-art' },
-  { id: 'isometric', name: 'Isometric', image: require('../components/tempelates/Gemini_Generated_Image_e9xkv5e9xkv5e9xk.png'), style_preset: 'isometric' },
-  { id: 'line-art', name: 'Line Art', image: require('../components/tempelates/Gemini_Generated_Image_ntx67antx67antx6.png'), style_preset: 'line-art' },
-  { id: 'low-poly', name: 'Low Poly', image: require('../components/tempelates/Gemini_Generated_Image_4zhzmx4zhzmx4zhz.png'), style_preset: 'low-poly' },
-  { id: 'modeling-compound', name: 'Modeling Compound', image: require('../components/tempelates/Gemini_Generated_Image_1o8u21o8u21o8u21.png'), style_preset: 'modeling-compound' },
-  { id: 'neon-punk', name: 'Neon Punk', image: require('../components/tempelates/Gemini_Generated_Image_40eapt40eapt40ea.png'), style_preset: 'neon-punk' },
-  { id: 'origami', name: 'Origami', image: require('../components/tempelates/Gemini_Generated_Image_j41pufj41pufj41p.jpg'), style_preset: 'origami' },
-  { id: 'photographic', name: 'Photographic', image: require('../components/tempelates/Gemini_Generated_Image_r3ofd2r3ofd2r3of.png'), style_preset: 'photographic' },
-  { id: 'pixel-art', name: 'Pixel Art', image: require('../components/tempelates/Gemini_Generated_Image_pozup3pozup3pozu.jpg'), style_preset: 'pixel-art' }
+  { id: '3d-Model', name: '3D Model', image: require('../components/tempelates/3d.png'), style_preset: '3d-model' },
+  { id: 'Analog-film', name: 'Analog Film', image: require('../components/tempelates/analog film.png'), style_preset: 'analog-film' },
+  { id: 'Anime', name: 'Anime', image: require('../components/tempelates/anime.png'), style_preset: 'anime' },
+  { id: 'Cinematic', name: 'Cinematic', image: require('../components/tempelates/cinematic.png'), style_preset: 'cinematic' },
+  { id: 'Comic-book', name: 'Comic Book', image: require('../components/tempelates/comic.png'), style_preset: 'comic-book' },
+  { id: 'Digital-art', name: 'Digital Art', image: require('../components/tempelates/digital art.png'), style_preset: 'digital-art' },
+  { id: 'Enhance', name: 'Enhance', image: require('../components/tempelates/enhance.png'), style_preset: 'enhance' },
+  { id: 'Fantasy-art', name: 'Fantasy Art', image: require('../components/tempelates/fantasy art.png'), style_preset: 'fantasy-art' },
+  { id: 'Isometric', name: 'Isometric', image: require('../components/tempelates/isometric.png'), style_preset: 'isometric' },
+  { id: 'Line-art', name: 'Line Art', image: require('../components/tempelates/line art.png'), style_preset: 'line-art' },
+  { id: 'Low-poly', name: 'Low Poly', image: require('../components/tempelates/low poly.png'), style_preset: 'low-poly' },
+  { id: 'Modeling-compound', name: 'Modeling Compound', image: require('../components/tempelates/modelling.png'), style_preset: 'modeling-compound' },
+  { id: 'Neon-punk', name: 'Neon Punk', image: require('../components/tempelates/neon.png'), style_preset: 'neon-punk' },
+  { id: 'Origami', name: 'Origami', image: require('../components/tempelates/origami.png'), style_preset: 'origami' },
+  { id: 'Photographic', name: 'Photographic', image: require('../components/tempelates/phtographic.png'), style_preset: 'photographic' },
+  { id: 'Pixel-art', name: 'Pixel Art', image: require('../components/tempelates/pixel.png'), style_preset: 'pixel-art' }
 ];
 
 if (Platform.OS === 'ios') {
@@ -50,7 +50,7 @@ if (Platform.OS === 'ios') {
           Image.prefetch(resolved.uri);
         }
       }
-    } catch (_) {}
+    } catch (_) { }
   });
 }
 
@@ -129,8 +129,8 @@ export default function AIImageScreen({ navigation }) {
 
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity 
-          style={styles.backBtn} 
+        <TouchableOpacity
+          style={styles.backBtn}
           onPress={() => {
             if (Platform.OS === 'ios') {
               try {
@@ -545,16 +545,17 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    height: 36,
-    backgroundColor: 'transparent',
+    paddingVertical: 8,
+    paddingHorizontal: 6,
+    backgroundColor: 'rgba(0, 0, 0, 0.65)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   styleCardText: {
     color: '#FFF',
-    fontSize: 14,
+    fontSize: 13,
     fontFamily: 'Geist',
-    fontWeight: 'bold',
-    textTransform: 'lowercase',
+    fontWeight: '600',
+    textAlign: 'center',
   },
 });
