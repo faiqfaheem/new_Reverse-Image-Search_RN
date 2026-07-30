@@ -17,7 +17,9 @@ import {
   Dimensions,
   BackHandler,
   Image,
+  ActivityIndicator,
 } from 'react-native';
+import { WebView } from 'react-native-webview';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   Camera,
@@ -411,48 +413,19 @@ function AppDrawerInner({ isOpen, onClose, navigation }) {
             </View>
           </View>
 
-          {/* Scrollable Privacy Content */}
-          <ScrollView contentContainerStyle={styles.termsContentScroll}>
-            <Text style={styles.termsTitle}>Privacy Policy</Text>
-            <Text style={styles.termsLastUpdated}>Last Updated: {getFormattedDate()}</Text>
-
-            <Text style={styles.termsSectionTitle}>1. Our Commitment to Privacy</Text>
-            <Text style={styles.termsText}>
-              We value your trust and are committed to protecting your privacy. This Privacy Policy describes how we handle information when you use our Reverse Image Search application.
-            </Text>
-
-            <Text style={styles.termsSectionTitle}>2. Uploaded Images & Audio Data</Text>
-            <Text style={styles.termsText}>
-              When you perform a reverse image search, you may select an image from your gallery, capture one with your camera, or use voice-to-text features.
-              {"\n\n"}
-              • Images and audio are processed strictly to complete your search request.
-              {"\n"}
-              • We do not store, archive, or collect your uploaded images or voice transcriptions on our servers.
-            </Text>
-
-            <Text style={styles.termsSectionTitle}>3. Third-Party Search Engines</Text>
-            <Text style={styles.termsText}>
-              To perform the search, the application forwards the selected image/text queries directly to third-party search providers (Google, Bing, Yandex). These external services operate under their own independent privacy policies. We do not control and are not responsible for their data collection practices.
-            </Text>
-
-            <Text style={styles.termsSectionTitle}>4. Device Permissions</Text>
-            <Text style={styles.termsText}>
-              To provide the key functionalities, our application requires permissions to access:
-              {"\n\n"}
-              • Camera: To take new photos for image search.
-              {"\n"}
-              • Storage/Photos: To select existing images from your device gallery.
-              {"\n"}
-              • Microphone: For voice-activated speech recognition.
-              {"\n\n"}
-              These permissions are used locally on your device and are never sold or shared with any third parties.
-            </Text>
-
-            <Text style={styles.termsSectionTitle}>5. Contact Us</Text>
-            <Text style={styles.termsText}>
-              If you have any questions or feedback regarding our privacy practices, please contact us at support@viberay.com.
-            </Text>
-          </ScrollView>
+          {/* Web View for Privacy Policy */}
+          <View style={{ flex: 1, backgroundColor: '#191919' }}>
+            <WebView
+              source={{ uri: 'https://sites.google.com/view/reverseimage-privacypolicy' }}
+              style={{ flex: 1, backgroundColor: '#191919' }}
+              startInLoadingState={true}
+              renderLoading={() => (
+                <View style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, justifyContent: 'center', alignItems: 'center', backgroundColor: '#191919' }}>
+                  <ActivityIndicator size="large" color="#007AFF" />
+                </View>
+              )}
+            />
+          </View>
         </SafeAreaView>
       </Modal>
 
