@@ -766,25 +766,25 @@ export default function HomeScreen({ route, onSearch, navigation }) {
           </SafeAreaView>
         </View>
 
-        {activeTab === 'generate_ai' && (
+        <View style={{ flex: 1, display: activeTab === 'generate_ai' ? 'flex' : 'none' }}>
           <AIArtDashboardScreen
             navigation={navigation}
             isTab={true}
             onOpenDrawer={() => setIsDrawerOpen(true)}
             onGoToHome={() => setActiveTab('explore')}
           />
-        )}
+        </View>
 
-        {activeTab === 'history' && (
+        <View style={{ flex: 1, display: activeTab === 'history' ? 'flex' : 'none' }}>
           <HistoryScreen
             navigation={navigation}
             isTab={true}
             onOpenDrawer={() => setIsDrawerOpen(true)}
             onGoToHome={() => setActiveTab('explore')}
           />
-        )}
+        </View>
 
-        {activeTab === 'downloads' && (
+        <View style={{ flex: 1, display: activeTab === 'downloads' ? 'flex' : 'none' }}>
           <DownloadsScreen
             route={{ params: { isAIOnly: downloadsIsAIOnly } }}
             navigation={navigation}
@@ -792,7 +792,7 @@ export default function HomeScreen({ route, onSearch, navigation }) {
             onOpenDrawer={() => setIsDrawerOpen(true)}
             onGoToHome={() => setActiveTab('explore')}
           />
-        )}
+        </View>
       </View>
 
       {/* Voice Search Overlay Modal */}

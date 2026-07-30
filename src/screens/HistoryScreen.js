@@ -32,7 +32,7 @@ export default function HistoryScreen({ route, navigation, isTab, onOpenDrawer, 
   const [selectedIds, setSelectedIds] = useState([]);
   const [isSelectionMode, setIsSelectionMode] = useState(false);
 
-  const fetchHistory = async () => {
+  const fetchHistory = useCallback(async () => {
     try {
       const list = await getSearchHistory();
       setHistoryItems(list);
@@ -41,7 +41,7 @@ export default function HistoryScreen({ route, navigation, isTab, onOpenDrawer, 
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchHistory();

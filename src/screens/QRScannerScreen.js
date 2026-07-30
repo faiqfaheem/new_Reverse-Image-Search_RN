@@ -137,7 +137,7 @@ export default function QRScannerScreen({ navigation }) {
     addHistoryEntry('qr', trimmedData);
 
     // Navigate to Result screen with the scanned content and a fromQR flag
-    navigation.navigate('Result', { 
+    navigation.replace('Result', { 
       searchQuery: trimmedData, 
       imageUri: null, 
       fromQR: true 
