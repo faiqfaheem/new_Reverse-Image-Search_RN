@@ -923,7 +923,10 @@ export default function ResultScreen({ searchQuery: propSearchQuery, imageUri: p
             <TouchableOpacity
               key={browser.id}
               style={[styles.bottomTab, { left: getTabLeft(browser.id) }]}
-              onPress={() => setActiveBrowser(browser.id)}
+              onPress={() => {
+                setActiveBrowser(browser.id);
+                setDetectedImageUrl(null);
+              }}
             >
               {isActive && (
                 <Image
