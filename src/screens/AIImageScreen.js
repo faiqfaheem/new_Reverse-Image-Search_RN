@@ -114,7 +114,7 @@ export default function AIImageScreen({ navigation }) {
     await incrementUsage('text_to_image', imageCount);
 
     const selectedStyleData = STYLE_TEMPLATES.find(s => s.id === selectedStyle);
-    navigation.navigate('AIImageResult', {
+    navigation.replace('AIImageResult', {
       prompt: prompt.trim(),
       style: selectedStyle,
       style_preset: selectedStyleData?.style_preset || '',
