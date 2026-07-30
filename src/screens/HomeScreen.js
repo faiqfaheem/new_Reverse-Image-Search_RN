@@ -727,7 +727,7 @@ export default function HomeScreen({ route, onSearch, navigation }) {
               {/* Search Bar */}
               <View style={styles.searchContainer}>
                 <Image
-                  source={require('../components/search bar.png')}
+                  source={Platform.OS === 'ios' ? require('../components/search_bar.png') : require('../components/group_1000007000.png')}
                   style={styles.searchBackground}
                   resizeMode="stretch"
                 />
