@@ -718,7 +718,7 @@ export default function HomeScreen({ route, onSearch, navigation }) {
               {/* Search Bar */}
               <View style={styles.searchContainer}>
                 <Image
-                  source={require('../components/group_1000007000.png')}
+                  source={require('../components/search bar.png')}
                   style={styles.searchBackground}
                   resizeMode="stretch"
                 />
@@ -743,7 +743,7 @@ export default function HomeScreen({ route, onSearch, navigation }) {
                     setSearchText(text);
                     if (text.trim()) setIsInputInvalid(false);
                   }}
-                  placeholder={isListening ? "Listening..." : ""}
+                  placeholder={isListening ? "Listening..." : "Type and Search"}
                   placeholderTextColor="#9AA0A6"
                   style={[
                     styles.inputOverlay,
