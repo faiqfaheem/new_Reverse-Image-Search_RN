@@ -290,7 +290,7 @@ export default function HomeScreen({ route, onSearch, navigation }) {
       const timeoutId = setTimeout(() => {
         backSubscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
       }, 0);
-      
+
       return () => {
         clearTimeout(timeoutId);
         if (backSubscription) {
@@ -727,7 +727,7 @@ export default function HomeScreen({ route, onSearch, navigation }) {
               {/* Search Bar */}
               <View style={styles.searchContainer}>
                 <Image
-                  source={Platform.OS === 'ios' ? require('../components/search_bar.png') : require('../components/group_1000007000.png')}
+                  source={Platform.OS === 'ios' ? require('../components/search_bar.png') : require('../components/Group 1000006999.png')}
                   style={styles.searchBackground}
                   resizeMode="stretch"
                 />
@@ -752,15 +752,19 @@ export default function HomeScreen({ route, onSearch, navigation }) {
                     setSearchText(text);
                     if (text.trim()) setIsInputInvalid(false);
                   }}
-                  placeholder={isListening ? "Listening..." : "Type and Search"}
+                  placeholder={isListening ? "Listening..." : "Type to Search"}
                   placeholderTextColor="#9AA0A6"
                   style={[
                     styles.inputOverlay,
                     isInputInvalid && styles.inputInvalidOverlay,
                     (Boolean(searchText && searchText.trim() !== '') || isListening) && styles.inputActiveBackground,
-                    Platform.OS === 'ios' && {
+                    Platform.OS === 'ios' ? {
                       lineHeight: 20, // Prevents text offset and shadow stacking on iOS
                       paddingVertical: 8,
+                    } : {
+                      paddingVertical: 0,
+                      includeFontPadding: false,
+                      textAlignVertical: 'center',
                     },
                   ]}
                   onSubmitEditing={() => {
