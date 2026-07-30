@@ -6,6 +6,7 @@
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "ios": {
+      "icon": "./assets/ios-icon.png",
       "supportsTablet": true,
       "jsEngine": "hermes",
       "infoPlist": {
