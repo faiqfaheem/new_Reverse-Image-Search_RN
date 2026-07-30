@@ -23,7 +23,7 @@ import * as FileSystem from 'expo-file-system/legacy';
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const scale = SCREEN_WIDTH / 1080;
 
-export default function HistoryScreen({ route, navigation, isTab, onOpenDrawer, onGoToHome }) {
+export default function HistoryScreen({ route, navigation, isTab, onOpenDrawer, onGoToHome, onRegisterBackAction }) {
   const [historyItems, setHistoryItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -80,6 +80,12 @@ export default function HistoryScreen({ route, navigation, isTab, onOpenDrawer, 
       return () => backHandler.remove();
     }, [fetchHistory, handleBackAction])
   );
+
+  useEffect(() => {
+    if (onRegisterBackAction) {
+      onRegisterBackAction(handleBackAction);
+    }
+  }, [handleBackAction, onRegisterBackAction]);
 
   const getHistoryImageUri = (storedPath) => {
     if (!storedPath) return null;

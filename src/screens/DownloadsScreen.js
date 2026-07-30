@@ -52,7 +52,7 @@ const formatIOSUri = (path) => {
   return path;
 };
 
-export default function DownloadsScreen({ route, navigation, isTab, onOpenDrawer, onGoToHome }) {
+export default function DownloadsScreen({ route, navigation, isTab, onOpenDrawer, onGoToHome, onRegisterBackAction }) {
   const insets = useSafeAreaInsets();
   const isAIOnly = route?.params?.isAIOnly ?? false;
   const [images, setImages] = useState([]);
@@ -121,6 +121,12 @@ export default function DownloadsScreen({ route, navigation, isTab, onOpenDrawer
       return () => subscription.remove();
     }, [fetchDownloads, handleBackAction])
   );
+
+  useEffect(() => {
+    if (onRegisterBackAction) {
+      onRegisterBackAction(handleBackAction);
+    }
+  }, [handleBackAction, onRegisterBackAction]);
 
   const handleShare = async (asset) => {
     try {

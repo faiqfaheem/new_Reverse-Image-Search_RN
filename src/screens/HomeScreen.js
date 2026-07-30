@@ -195,6 +195,61 @@ export default function HomeScreen({ route, onSearch, navigation }) {
   useEffect(() => { isDrawerOpenRef.current = isDrawerOpen; }, [isDrawerOpen]);
   useEffect(() => { activeTabRef.current = activeTab; }, [activeTab]);
 
+  const childBackHandlersRef = useRef({});
+  const swipeHandledRef = useRef(false);
+
+  const edgeSwipeResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => false,
+      onMoveShouldSetPanResponder: (evt, gestureState) => {
+        // Only trigger if starting near the left edge (< 40px), swiping right, and we are not in 'explore'
+        if (
+          Platform.OS === 'ios' &&
+          activeTabRef.current !== 'explore' &&
+          evt.nativeEvent.pageX < 40 &&
+          gestureState.dx > 10 &&
+          Math.abs(gestureState.dx) > Math.abs(gestureState.dy)
+        ) {
+          swipeHandledRef.current = false;
+          return true;
+        }
+        return false;
+      },
+      onPanResponderMove: (evt, gestureState) => {
+        // Instant response while swiping! No need to wait for release.
+        if (gestureState.dx > 30 && !swipeHandledRef.current) {
+          swipeHandledRef.current = true;
+          if (activeTabRef.current !== 'explore') {
+            const handler = childBackHandlersRef.current[activeTabRef.current];
+            let handledByChild = false;
+            if (handler) {
+              handledByChild = handler();
+            }
+            if (!handledByChild) {
+              setActiveTab('explore');
+            }
+          }
+        }
+      },
+      onPanResponderRelease: (evt, gestureState) => {
+        // Fallback in case move threshold wasn't hit but they swiped fast
+        if (gestureState.dx > 20 && gestureState.vx > 0.3 && !swipeHandledRef.current) {
+          swipeHandledRef.current = true;
+          if (activeTabRef.current !== 'explore') {
+            const handler = childBackHandlersRef.current[activeTabRef.current];
+            let handledByChild = false;
+            if (handler) {
+              handledByChild = handler();
+            }
+            if (!handledByChild) {
+              setActiveTab('explore');
+            }
+          }
+        }
+      },
+    })
+  ).current;
+
   // Intercept hardware back button globally across all states
   useFocusEffect(
     useCallback(() => {
@@ -621,7 +676,7 @@ export default function HomeScreen({ route, onSearch, navigation }) {
 
   // RENDER HOME VIEW
   return (
-    <View style={styles.container}>
+    <View style={styles.container} {...edgeSwipeResponder.panHandlers}>
       <StatusBar barStyle="light-content" backgroundColor="transparent" translucent={true} />
 
       {/* Render the active tab content with mounted tab views to eliminate switching flicker */}
@@ -781,6 +836,7 @@ export default function HomeScreen({ route, onSearch, navigation }) {
             isTab={true}
             onOpenDrawer={() => setIsDrawerOpen(true)}
             onGoToHome={() => setActiveTab('explore')}
+            onRegisterBackAction={(handler) => { childBackHandlersRef.current['history'] = handler; }}
           />
         </View>
 
@@ -791,6 +847,7 @@ export default function HomeScreen({ route, onSearch, navigation }) {
             isTab={true}
             onOpenDrawer={() => setIsDrawerOpen(true)}
             onGoToHome={() => setActiveTab('explore')}
+            onRegisterBackAction={(handler) => { childBackHandlersRef.current['downloads'] = handler; }}
           />
         </View>
       </View>
