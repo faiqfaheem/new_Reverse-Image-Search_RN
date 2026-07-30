@@ -902,11 +902,11 @@ export default function ResultScreen({ searchQuery: propSearchQuery, imageUri: p
             height: (166 * scale) + Math.max(insets.bottom, 0),
             paddingBottom: Math.max(insets.bottom, 0),
             paddingTop: 8,
-            backgroundColor: '#1E1E1E',
+            backgroundColor: '#131313',
           }
           : { bottom: Math.max(insets.bottom, 0) }
       ]}>
-        <Image
+        {/* <Image
           source={require('../components/rectangle_71.png')}
           style={[
             styles.bottomTabBarBg,
@@ -916,7 +916,7 @@ export default function ResultScreen({ searchQuery: propSearchQuery, imageUri: p
             },
           ]}
           resizeMode="cover"
-        />
+        /> */}
         {browsers.map((browser) => {
           const isActive = activeBrowser === browser.id;
           return (
@@ -1031,7 +1031,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     width: 1080 * scale,
     height: 166 * scale,
-    backgroundColor: '#1E1E1E',
+    backgroundColor: '#131313',
     zIndex: 20,
   },
   bottomTabBarBg: {
