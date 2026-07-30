@@ -45,7 +45,7 @@ const GoogleIcon = ({ isActive }) => (
     />
     {isActive && (
       <Image
-        source={require('../components/line 3.png')}
+        source={Platform.OS === 'ios' ? require('../components/line_3.png') : require('../components/line 3.png')}
         style={styles.googleLine}
         resizeMode="contain"
       />
@@ -60,7 +60,7 @@ const BingIcon = ({ isActive }) => (
     <SvgXml xml={bingXml} width={106 * scale} height={106 * scale} />
     {isActive && (
       <Image
-        source={require('../components/line 1  (1).png')}
+        source={Platform.OS === 'ios' ? require('../components/line_1.png') : require('../components/line 1  (1).png')}
         style={styles.bingLine}
         resizeMode="contain"
       />
@@ -92,7 +92,7 @@ const YandexIcon = ({ isActive }) => (
     />
     {isActive && (
       <Image
-        source={require('../components/line 2 .png')}
+        source={Platform.OS === 'ios' ? require('../components/line_2.png') : require('../components/line 2 .png')}
         style={styles.yandexLine}
         resizeMode="contain"
       />
