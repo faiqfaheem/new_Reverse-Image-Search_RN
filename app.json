@@ -16,7 +16,7 @@
         "NSPhotoLibraryUsageDescription": "Allow this app to access your photos to select images for visual search.",
         "NSPhotoLibraryAddUsageDescription": "Allow this app to save downloaded images to your photo gallery."
       },
-      "bundleIdentifier": "com.viberay.reverseimagesearchapp"
+      "bundleIdentifier": "com.viberaytech.reverseimage"
     },
     "icon": "./assets/icon.png",
     "splash": {
@@ -25,7 +25,7 @@
       "backgroundColor": "#131313"
     },
     "android": {
-      "package": "com.viberay.reverseimagesearchapp",
+      "package": "com.viberaytech.reverseimage",
       "jsEngine": "hermes",
       "splash": {
         "backgroundColor": "#131313",

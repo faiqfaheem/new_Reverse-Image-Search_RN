@@ -87,9 +87,9 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace 'com.viberay.reverseimagesearchapp'
+    namespace 'com.viberaytech.reverseimage'
     defaultConfig {
-        applicationId 'com.viberay.reverseimagesearchapp'
+        applicationId 'com.viberaytech.reverseimage'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
