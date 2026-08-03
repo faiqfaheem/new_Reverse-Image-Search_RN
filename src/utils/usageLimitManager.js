@@ -1,7 +1,7 @@
 import * as FileSystem from 'expo-file-system/legacy';
 
 const USAGE_FILE_URI = FileSystem.documentDirectory + 'usage_limits.json';
-const DAILY_LIMIT = 50;
+const DAILY_LIMIT = 5;
 
 const getTodayString = () => {
   const date = new Date();
