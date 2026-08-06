@@ -133,17 +133,28 @@ export default function DownloadsScreen({ route, navigation, isTab, onOpenDrawer
   const handleShare = async (asset) => {
     try {
       let itemUri = formatFileUri(asset.uri);
+      let shareUrl = itemUri;
+
       if (itemUri && itemUri.startsWith('http')) {
         const filename = `temp_share_${Date.now()}_${Math.floor(Math.random() * 1000)}.jpg`;
         const cacheUri = `${FileSystem.cacheDirectory}${filename}`;
         const downloaded = await FileSystem.downloadAsync(itemUri, cacheUri);
-        itemUri = downloaded.uri;
-      } else if (itemUri && !itemUri.startsWith('file://') && !itemUri.startsWith('data:')) {
-        itemUri = `file://${itemUri}`;
+        shareUrl = downloaded.uri;
       }
+
+      if (shareUrl && !shareUrl.startsWith('data:image')) {
+        try {
+          const base64Data = await FileSystem.readAsStringAsync(shareUrl, {
+            encoding: 'base64',
+          });
+          shareUrl = `data:image/jpeg;base64,${base64Data}`;
+        } catch (_) {}
+      }
+
       await RNShare.open({
-        url: itemUri,
+        url: shareUrl,
         type: 'image/jpeg',
+        failOnCancel: false,
       });
     } catch (err) {
       if (err && err.message && !err.message.includes('User did not share') && !err.message.includes('CANCELLED')) {
@@ -186,44 +197,65 @@ export default function DownloadsScreen({ route, navigation, isTab, onOpenDrawer
     }
   };
 
-  // Bulk Share implementation - shares all selected images at once
+  // Bulk Share implementation - shares all selected images at once via base64 data URLs
   const handleBulkShare = async () => {
     if (selectedIds.length === 0) return;
     const assetsToShare = images.filter((img) => selectedIds.includes(img.id));
     if (assetsToShare.length === 0) return;
 
+    setLoading(true);
     try {
-      const fileUrls = await Promise.all(
+      const base64Urls = await Promise.all(
         assetsToShare.map(async (asset) => {
-          let itemUri = formatFileUri(asset.uri);
-          if (itemUri && itemUri.startsWith('http')) {
+          let uri = formatFileUri(asset.uri);
+          if (!uri) return null;
+
+          if (uri.startsWith('data:image')) {
+            return uri;
+          }
+
+          let localPath = uri;
+          if (uri.startsWith('http')) {
             const filename = `temp_share_${Date.now()}_${Math.floor(Math.random() * 1000)}.jpg`;
             const cacheUri = `${FileSystem.cacheDirectory}${filename}`;
-            const downloaded = await FileSystem.downloadAsync(itemUri, cacheUri);
-            return downloaded.uri;
+            const downloaded = await FileSystem.downloadAsync(uri, cacheUri);
+            localPath = downloaded.uri;
           }
-          if (itemUri && !itemUri.startsWith('file://') && !itemUri.startsWith('data:')) {
-            itemUri = `file://${itemUri}`;
+
+          try {
+            const base64Data = await FileSystem.readAsStringAsync(localPath, {
+              encoding: 'base64',
+            });
+            return `data:image/jpeg;base64,${base64Data}`;
+          } catch (readErr) {
+            console.warn("Base64 read error for share:", readErr);
+            return localPath.startsWith('file://') ? localPath : `file://${localPath}`;
           }
-          return itemUri;
         })
       );
 
-      if (fileUrls.length === 1) {
+      const validUrls = base64Urls.filter(Boolean);
+      if (validUrls.length === 0) return;
+
+      if (validUrls.length === 1) {
         await RNShare.open({
-          url: fileUrls[0],
+          url: validUrls[0],
           type: 'image/jpeg',
+          failOnCancel: false,
         });
       } else {
         await RNShare.open({
-          urls: fileUrls,
+          urls: validUrls,
           type: 'image/jpeg',
+          failOnCancel: false,
         });
       }
     } catch (err) {
       if (err && err.message && !err.message.includes('User did not share') && !err.message.includes('CANCELLED')) {
         console.log('Bulk share error:', err);
       }
+    } finally {
+      setLoading(false);
     }
   };
 
