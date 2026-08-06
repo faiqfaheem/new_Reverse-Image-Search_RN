@@ -132,19 +132,25 @@ export default function DownloadsScreen({ route, navigation, isTab, onOpenDrawer
 
   const handleShare = async (asset) => {
     try {
-      let itemUri = formatFileUri(asset.uri);
-      if (itemUri && itemUri.startsWith('http')) {
-        const filename = `temp_share_${Date.now()}_${Math.floor(Math.random() * 1000)}.jpg`;
-        const cacheUri = `${FileSystem.cacheDirectory}${filename}`;
-        const downloaded = await FileSystem.downloadAsync(itemUri, cacheUri);
-        itemUri = downloaded.uri;
-      }
-      if (itemUri && !itemUri.startsWith('file://') && !itemUri.startsWith('data:')) {
-        itemUri = `file://${itemUri}`;
+      let uri = formatFileUri(asset.uri);
+      if (!uri) return;
+
+      const filename = `temp_share_${Date.now()}_${Math.floor(Math.random() * 1000)}.jpg`;
+      const cacheUri = `${FileSystem.cacheDirectory}${filename}`;
+
+      if (uri.startsWith('http')) {
+        const downloaded = await FileSystem.downloadAsync(uri, cacheUri);
+        uri = downloaded.uri;
+      } else {
+        if (!uri.startsWith('file://') && !uri.startsWith('data:')) {
+          uri = `file://${uri}`;
+        }
+        await FileSystem.copyAsync({ from: uri, to: cacheUri });
+        uri = cacheUri;
       }
 
       await RNShare.open({
-        url: itemUri,
+        url: uri,
         type: 'image/*',
         failOnCancel: false,
       });
@@ -202,17 +208,19 @@ export default function DownloadsScreen({ route, navigation, isTab, onOpenDrawer
           let uri = formatFileUri(asset.uri);
           if (!uri) return null;
 
+          const filename = `temp_share_${Date.now()}_${Math.floor(Math.random() * 1000)}.jpg`;
+          const cacheUri = `${FileSystem.cacheDirectory}${filename}`;
+
           if (uri.startsWith('http')) {
-            const filename = `temp_share_${Date.now()}_${Math.floor(Math.random() * 1000)}.jpg`;
-            const cacheUri = `${FileSystem.cacheDirectory}${filename}`;
             const downloaded = await FileSystem.downloadAsync(uri, cacheUri);
             return downloaded.uri;
+          } else {
+            if (!uri.startsWith('file://') && !uri.startsWith('data:')) {
+              uri = `file://${uri}`;
+            }
+            await FileSystem.copyAsync({ from: uri, to: cacheUri });
+            return cacheUri;
           }
-
-          if (!uri.startsWith('file://') && !uri.startsWith('data:')) {
-            uri = `file://${uri}`;
-          }
-          return uri;
         })
       );
 
