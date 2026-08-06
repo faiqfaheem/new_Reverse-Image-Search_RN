@@ -277,10 +277,10 @@ export default function DownloadsScreen({ route, navigation, isTab, onOpenDrawer
           </View>
           <View style={styles.headerRightActions}>
             <TouchableOpacity style={styles.headerActionBtn} onPress={handleBulkShare}>
-              <Share2 size={24} color="#FFF" />
+              <Image source={require('../components/mdi_share.png')} style={styles.headerActionIcon} resizeMode="contain" />
             </TouchableOpacity>
             <TouchableOpacity style={styles.headerActionBtn} onPress={handleBulkDelete}>
-              <Trash2 size={24} color="#FFF" />
+              <Image source={require('../components/material-symbols-light_delete.png')} style={styles.headerActionIcon} resizeMode="contain" />
             </TouchableOpacity>
           </View>
         </View>
