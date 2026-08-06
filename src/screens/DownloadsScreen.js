@@ -19,6 +19,7 @@ import {
 import { Trash2, X, Download, Check, ArrowLeft, Share2 } from 'lucide-react-native';
 import * as MediaLibrary from 'expo-media-library';
 import * as Sharing from 'expo-sharing';
+import RNShare from 'react-native-share';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getSavedDownloads, deleteSavedDownload, deleteMultipleSavedDownloads, formatFileUri } from '../utils/downloadManager';
 import { useFocusEffect } from '@react-navigation/native';
@@ -130,17 +131,20 @@ export default function DownloadsScreen({ route, navigation, isTab, onOpenDrawer
 
   const handleShare = async (asset) => {
     try {
-      const isAvailable = await Sharing.isAvailableAsync();
-      if (!isAvailable) {
-        Alert.alert('Sharing not available', 'Sharing is not available on this device');
-        return;
-      }
-      await Sharing.shareAsync(asset.uri, {
-        dialogTitle: 'Share Image',
-        mimeType: 'image/jpeg',
+      const itemUri = formatFileUri(asset.uri);
+      await RNShare.open({
+        url: itemUri,
+        type: 'image/jpeg',
       });
     } catch (err) {
-      Alert.alert('Share Failed', 'Unable to share the selected image.');
+      if (err && err.message !== 'User did not share') {
+        try {
+          await Sharing.shareAsync(formatFileUri(asset.uri), {
+            dialogTitle: 'Share Image',
+            mimeType: 'image/jpeg',
+          });
+        } catch (_) {}
+      }
     }
   };
 
@@ -173,28 +177,29 @@ export default function DownloadsScreen({ route, navigation, isTab, onOpenDrawer
     }
   };
 
-  // Bulk Share implementation
+  // Bulk Share implementation - shares all selected images at once
   const handleBulkShare = async () => {
     if (selectedIds.length === 0) return;
     const assetsToShare = images.filter((img) => selectedIds.includes(img.id));
     if (assetsToShare.length === 0) return;
 
     try {
-      const isAvailable = await Sharing.isAvailableAsync();
-      if (!isAvailable) {
-        Alert.alert('Sharing not available', 'Sharing is not available on this device');
-        return;
-      }
-
-      for (let i = 0; i < assetsToShare.length; i++) {
-        const itemUri = formatFileUri(assetsToShare[i].uri);
-        await Sharing.shareAsync(itemUri, {
-          dialogTitle: `Share Image ${i + 1} of ${assetsToShare.length}`,
-          mimeType: 'image/jpeg',
+      const urls = assetsToShare.map((asset) => formatFileUri(asset.uri));
+      if (urls.length === 1) {
+        await RNShare.open({
+          url: urls[0],
+          type: 'image/jpeg',
+        });
+      } else {
+        await RNShare.open({
+          urls: urls,
+          type: 'image/jpeg',
         });
       }
     } catch (err) {
-      console.log('Bulk share error:', err);
+      if (err && err.message !== 'User did not share') {
+        console.log('Bulk share error:', err);
+      }
     }
   };
 
