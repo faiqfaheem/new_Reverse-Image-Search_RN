@@ -75,7 +75,7 @@ export default function AppNavigator({ isAuthorized, onPermissionsGranted }) {
           name="Home" 
           component={HomeScreen} 
           options={{
-            gestureEnabled: Platform.OS === 'ios' ? false : true,
+            gestureEnabled: false,
           }}
         />
         <Stack.Screen name="Result" component={ResultScreen} />
