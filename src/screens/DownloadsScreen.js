@@ -18,6 +18,7 @@ import {
 } from 'react-native';
 import { Trash2, X, Download, Check, ArrowLeft, Share2 } from 'lucide-react-native';
 import * as MediaLibrary from 'expo-media-library';
+import * as FileSystem from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
 import RNShare from 'react-native-share';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -131,13 +132,18 @@ export default function DownloadsScreen({ route, navigation, isTab, onOpenDrawer
 
   const handleShare = async (asset) => {
     try {
-      const itemUri = formatFileUri(asset.uri);
+      let itemUri = formatFileUri(asset.uri);
+      if (Platform.OS === 'android' && itemUri && itemUri.startsWith('file://')) {
+        try {
+          itemUri = await FileSystem.getContentUriAsync(itemUri);
+        } catch (_) {}
+      }
       await RNShare.open({
         url: itemUri,
-        type: 'image/jpeg',
+        type: 'image/*',
       });
     } catch (err) {
-      if (err && err.message !== 'User did not share') {
+      if (err && err.message && !err.message.includes('User did not share') && !err.message.includes('CANCELLED')) {
         try {
           await Sharing.shareAsync(formatFileUri(asset.uri), {
             dialogTitle: 'Share Image',
@@ -177,28 +183,48 @@ export default function DownloadsScreen({ route, navigation, isTab, onOpenDrawer
     }
   };
 
-  // Bulk Share implementation - shares all selected images at once
+  // Bulk Share implementation - shares all selected images at once via FileProvider content URIs
   const handleBulkShare = async () => {
     if (selectedIds.length === 0) return;
     const assetsToShare = images.filter((img) => selectedIds.includes(img.id));
     if (assetsToShare.length === 0) return;
 
     try {
-      const urls = assetsToShare.map((asset) => formatFileUri(asset.uri));
+      const urls = await Promise.all(
+        assetsToShare.map(async (asset) => {
+          let itemUri = formatFileUri(asset.uri);
+          if (Platform.OS === 'android' && itemUri && itemUri.startsWith('file://')) {
+            try {
+              const contentUri = await FileSystem.getContentUriAsync(itemUri);
+              return contentUri;
+            } catch (_) {
+              return itemUri;
+            }
+          }
+          return itemUri;
+        })
+      );
+
       if (urls.length === 1) {
         await RNShare.open({
           url: urls[0],
-          type: 'image/jpeg',
+          type: 'image/*',
         });
       } else {
         await RNShare.open({
           urls: urls,
-          type: 'image/jpeg',
+          type: 'image/*',
         });
       }
     } catch (err) {
-      if (err && err.message !== 'User did not share') {
+      if (err && err.message && !err.message.includes('User did not share') && !err.message.includes('CANCELLED')) {
         console.log('Bulk share error:', err);
+        // Fallback: iterate and share via expo-sharing if batch sharing fails
+        try {
+          for (const asset of assetsToShare) {
+            await Sharing.shareAsync(formatFileUri(asset.uri));
+          }
+        } catch (_) {}
       }
     }
   };
