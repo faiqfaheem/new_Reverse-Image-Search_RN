@@ -257,24 +257,13 @@ export default function ResultScreen({ searchQuery: propSearchQuery, imageUri: p
         throw new Error('Unsupported URL protocol');
       }
 
-      let assetCreated = false;
       let galleryAssetId = null;
       try {
         const asset = await MediaLibrary.createAssetAsync(localUri);
-        assetCreated = true;
         galleryAssetId = asset.id;
-        const albumName = 'Reverse Image Search';
-        const album = await MediaLibrary.getAlbumAsync(albumName);
-        if (album === null) {
-          await MediaLibrary.createAlbumAsync(albumName, asset, false);
-        } else {
-          await MediaLibrary.addAssetsToAlbumAsync([asset], album, false);
-        }
       } catch (saveErr) {
-        console.warn("Album saving failed:", saveErr);
-        if (!assetCreated) {
-          await MediaLibrary.saveToLibraryAsync(localUri);
-        }
+        console.warn("Direct gallery save fallback:", saveErr);
+        await MediaLibrary.saveToLibraryAsync(localUri);
       }
 
       // Save to custom downloads metadata to display on saved downloads screen
