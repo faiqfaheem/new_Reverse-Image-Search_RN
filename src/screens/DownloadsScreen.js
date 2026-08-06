@@ -16,7 +16,7 @@ import {
   Platform,
   BackHandler,
 } from 'react-native';
-import { Trash2, X, Download, Check, ArrowLeft } from 'lucide-react-native';
+import { Trash2, X, Download, Check, ArrowLeft, Share2 } from 'lucide-react-native';
 import * as MediaLibrary from 'expo-media-library';
 import * as Sharing from 'expo-sharing';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -173,6 +173,31 @@ export default function DownloadsScreen({ route, navigation, isTab, onOpenDrawer
     }
   };
 
+  // Bulk Share implementation
+  const handleBulkShare = async () => {
+    if (selectedIds.length === 0) return;
+    const assetsToShare = images.filter((img) => selectedIds.includes(img.id));
+    if (assetsToShare.length === 0) return;
+
+    try {
+      const isAvailable = await Sharing.isAvailableAsync();
+      if (!isAvailable) {
+        Alert.alert('Sharing not available', 'Sharing is not available on this device');
+        return;
+      }
+
+      for (let i = 0; i < assetsToShare.length; i++) {
+        const itemUri = formatFileUri(assetsToShare[i].uri);
+        await Sharing.shareAsync(itemUri, {
+          dialogTitle: `Share Image ${i + 1} of ${assetsToShare.length}`,
+          mimeType: 'image/jpeg',
+        });
+      }
+    } catch (err) {
+      console.log('Bulk share error:', err);
+    }
+  };
+
   const handlePress = (item) => {
     if (isSelectionMode) {
       toggleSelect(item.id);
@@ -245,9 +270,14 @@ export default function DownloadsScreen({ route, navigation, isTab, onOpenDrawer
             </TouchableOpacity>
             <Text style={styles.headerTitle}>{selectedIds.length} Selected</Text>
           </View>
-          <TouchableOpacity style={styles.selectionDeleteBtn} onPress={handleBulkDelete}>
-            <Trash2 size={24} color="#FFF" />
-          </TouchableOpacity>
+          <View style={styles.headerRightActions}>
+            <TouchableOpacity style={styles.headerActionBtn} onPress={handleBulkShare}>
+              <Share2 size={24} color="#FFF" />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.headerActionBtn} onPress={handleBulkDelete}>
+              <Trash2 size={24} color="#FFF" />
+            </TouchableOpacity>
+          </View>
         </View>
       ) : (
         <View style={[styles.header, { height: headerHeight, paddingTop: headerPaddingTop }]}>
