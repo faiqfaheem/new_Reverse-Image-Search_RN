@@ -416,7 +416,7 @@ function AppDrawerInner({ isOpen, onClose, navigation }) {
           {/* Web View for Privacy Policy */}
           <View style={{ flex: 1, backgroundColor: '#191919' }}>
             <WebView
-              source={{ uri: 'https://aalphatech.blogspot.com/2022/07/policy-aalphatech-built-applications-as.html' }}
+              source={{ uri: 'https://sites.google.com/view/searchaiimagegen-privacypolicy' }}
               style={{ flex: 1, backgroundColor: '#191919' }}
               startInLoadingState={true}
               renderLoading={() => (
