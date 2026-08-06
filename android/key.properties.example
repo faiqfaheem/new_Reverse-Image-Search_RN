@@ -1,0 +1,7 @@
+# Keystore release configuration
+# Copy this file to 'key.properties' in the android folder and fill in your details:
+
+storeFile=my-release-key.keystore
+storePassword=your_store_password
+keyAlias=your_key_alias
+keyPassword=your_key_password

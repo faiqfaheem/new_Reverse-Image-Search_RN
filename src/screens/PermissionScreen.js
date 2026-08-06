@@ -270,7 +270,7 @@ export default function PermissionScreen({ onPermissionsGranted, navigation }) {
       } else if (Platform.OS === 'android') {
         try {
           await Linking.sendIntent('android.settings.APPLICATION_DETAILS_SETTINGS', [
-            { key: 'package', value: 'com.viberay.reverseimagesearchapp' }
+            { key: 'package', value: 'com.search.camera.gallery.image' }
           ]);
         } catch (_) {
           await Linking.openSettings();

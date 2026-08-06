@@ -1,4 +1,8 @@
+<<<<<<<< HEAD:android/app/src/main/java/com/viberaytech/reverseimage/MainActivity.kt
 package com.viberaytech.reverseimage
+========
+package com.search.camera.gallery.image
+>>>>>>>> 64dbf3a (chore: update package name to com.search.camera.gallery.image, sync version to 1.0.4, update privacy policy link and release signing config):android/app/src/main/java/com/search/camera/gallery/image/MainActivity.kt
 
 import android.os.Build
 import android.os.Bundle

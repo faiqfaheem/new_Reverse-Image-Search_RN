@@ -2,7 +2,7 @@
   "expo": {
     "name": "Reverse Image Search",
     "slug": "reverse-image-search-app",
-    "version": "1.0.0",
+    "version": "1.0.4",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "ios": {
@@ -25,7 +25,7 @@
       "backgroundColor": "#131313"
     },
     "android": {
-      "package": "com.viberaytech.reverseimage",
+      "package": "com.viberay.reverseimagesearchapp",
       "jsEngine": "hermes",
       "splash": {
         "backgroundColor": "#131313",

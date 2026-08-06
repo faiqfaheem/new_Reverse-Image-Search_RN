@@ -10,3 +10,6 @@ __pycache__/
 venv/
 .venv/
 *.md
+*.jks
+*.keystore
+key.properties

@@ -17,3 +17,4 @@ local.properties
 
 # Keystores
 *.keystore
+key.properties
