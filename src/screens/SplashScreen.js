@@ -18,9 +18,7 @@ export default function SplashScreen() {
 
       {/* App Name — "Reverse Image Search" at X:240, Y:1425, W:600, H:84 */}
       <Text 
-        style={styles.appName} 
-        numberOfLines={1} 
-        adjustsFontSizeToFit={true}
+        style={styles.appName}
       >
         Reverse Image Search
       </Text>
@@ -51,12 +49,9 @@ const styles = StyleSheet.create({
     left: 0,
     top: 1425 * scale,
     width: '100%',
-    height: 84 * scale,
     fontFamily: 'Jua',
     fontWeight: '400',
     fontSize: 55.55 * scale,
-    lineHeight: 55.55 * scale * 1.52,
-    letterSpacing: 55.55 * scale * 0.065,
     color: '#FFFFFF',
     textAlign: 'center',
   },

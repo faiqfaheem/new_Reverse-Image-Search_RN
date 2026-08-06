@@ -77,7 +77,8 @@ export default function DownloadsScreen({ route, navigation, isTab, onOpenDrawer
       if (isAIOnly) {
         setImages(list.filter((item) => item.isAI === true));
       } else {
-        setImages(list.filter((item) => item.isAI !== true));
+        // Show both browser and AI art downloads in the main folder
+        setImages(list);
       }
     } catch (err) {
       console.error('Error fetching downloads:', err);
