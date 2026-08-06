@@ -48,9 +48,9 @@ const styles = StyleSheet.create({
   },
   appName: {
     position: 'absolute',
-    left: 240 * scale,
+    left: 0,
     top: 1425 * scale,
-    width: 600 * scale,
+    width: '100%',
     height: 84 * scale,
     fontFamily: 'Jua',
     fontWeight: '400',

@@ -282,8 +282,7 @@ export default function HomeScreen({ route, onSearch, navigation }) {
         }
 
         // 5. On Explore Home screen -> exit app cleanly
-        BackHandler.exitApp();
-        return true;
+        return false;
       };
 
       let backSubscription;
