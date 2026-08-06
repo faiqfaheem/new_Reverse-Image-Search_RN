@@ -97,7 +97,7 @@ export default function AIImageResultScreen({ route, navigation }) {
       return;
     }
 
-    const { status } = await MediaLibrary.requestPermissionsAsync();
+    const { status } = await MediaLibrary.requestPermissionsAsync(true);
     if (status !== 'granted') {
       Alert.alert(
         "Permission Denied",

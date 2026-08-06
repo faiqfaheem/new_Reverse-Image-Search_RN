@@ -341,7 +341,7 @@ export default function AIRemixScreen({ route, navigation }) {
 
   const handleDownloadRemix = async () => {
     if (!currentRemixUri) return;
-    const { status } = await MediaLibrary.requestPermissionsAsync();
+    const { status } = await MediaLibrary.requestPermissionsAsync(true);
     if (status !== 'granted') {
       Alert.alert('Permission Denied', 'Permission to access gallery is required to save photos.');
       return;

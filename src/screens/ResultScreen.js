@@ -181,7 +181,7 @@ export default function ResultScreen({ searchQuery: propSearchQuery, imageUri: p
       return;
     }
 
-    const { status } = await MediaLibrary.requestPermissionsAsync();
+    const { status } = await MediaLibrary.requestPermissionsAsync(true);
     if (status !== 'granted') {
       Alert.alert(
         "Permission Denied",
