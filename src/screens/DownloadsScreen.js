@@ -133,27 +133,19 @@ export default function DownloadsScreen({ route, navigation, isTab, onOpenDrawer
   const handleShare = async (asset) => {
     try {
       let itemUri = formatFileUri(asset.uri);
-      let shareUrl = itemUri;
-
       if (itemUri && itemUri.startsWith('http')) {
         const filename = `temp_share_${Date.now()}_${Math.floor(Math.random() * 1000)}.jpg`;
         const cacheUri = `${FileSystem.cacheDirectory}${filename}`;
         const downloaded = await FileSystem.downloadAsync(itemUri, cacheUri);
-        shareUrl = downloaded.uri;
+        itemUri = downloaded.uri;
       }
-
-      if (shareUrl && !shareUrl.startsWith('data:image')) {
-        try {
-          const base64Data = await FileSystem.readAsStringAsync(shareUrl, {
-            encoding: 'base64',
-          });
-          shareUrl = `data:image/jpeg;base64,${base64Data}`;
-        } catch (_) {}
+      if (itemUri && !itemUri.startsWith('file://') && !itemUri.startsWith('data:')) {
+        itemUri = `file://${itemUri}`;
       }
 
       await RNShare.open({
-        url: shareUrl,
-        type: 'image/jpeg',
+        url: itemUri,
+        type: 'image/*',
         failOnCancel: false,
       });
     } catch (err) {
@@ -197,7 +189,7 @@ export default function DownloadsScreen({ route, navigation, isTab, onOpenDrawer
     }
   };
 
-  // Bulk Share implementation - shares all selected images at once via base64 data URLs
+  // Bulk Share implementation - shares all selected images at once via file URIs
   const handleBulkShare = async () => {
     if (selectedIds.length === 0) return;
     const assetsToShare = images.filter((img) => selectedIds.includes(img.id));
@@ -205,48 +197,38 @@ export default function DownloadsScreen({ route, navigation, isTab, onOpenDrawer
 
     setLoading(true);
     try {
-      const base64Urls = await Promise.all(
+      const fileUrls = await Promise.all(
         assetsToShare.map(async (asset) => {
           let uri = formatFileUri(asset.uri);
           if (!uri) return null;
 
-          if (uri.startsWith('data:image')) {
-            return uri;
-          }
-
-          let localPath = uri;
           if (uri.startsWith('http')) {
             const filename = `temp_share_${Date.now()}_${Math.floor(Math.random() * 1000)}.jpg`;
             const cacheUri = `${FileSystem.cacheDirectory}${filename}`;
             const downloaded = await FileSystem.downloadAsync(uri, cacheUri);
-            localPath = downloaded.uri;
+            return downloaded.uri;
           }
 
-          try {
-            const base64Data = await FileSystem.readAsStringAsync(localPath, {
-              encoding: 'base64',
-            });
-            return `data:image/jpeg;base64,${base64Data}`;
-          } catch (readErr) {
-            console.warn("Base64 read error for share:", readErr);
-            return localPath.startsWith('file://') ? localPath : `file://${localPath}`;
+          if (!uri.startsWith('file://') && !uri.startsWith('data:')) {
+            uri = `file://${uri}`;
           }
+          return uri;
         })
       );
 
-      const validUrls = base64Urls.filter(Boolean);
+      const validUrls = fileUrls.filter(Boolean);
       if (validUrls.length === 0) return;
 
       if (validUrls.length === 1) {
         await RNShare.open({
           url: validUrls[0],
-          type: 'image/jpeg',
+          type: 'image/*',
           failOnCancel: false,
         });
       } else {
         await RNShare.open({
           urls: validUrls,
-          type: 'image/jpeg',
+          type: 'image/*',
           failOnCancel: false,
         });
       }
