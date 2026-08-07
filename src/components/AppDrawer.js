@@ -175,11 +175,11 @@ function AppDrawerInner({ isOpen, onClose, navigation }) {
     setIsRateModalVisible(false);
     handleClose();
     const storeUrl = Platform.OS === 'ios'
-      ? 'https://apps.apple.com/app/id64a14811'
-      : 'https://play.google.com/store/apps/details?id=com.reverseimagesearch.app';
+      ? 'https://apps.apple.com/app/id6797868807?action=write-review'
+      : 'https://play.google.com/store/apps/details?id=com.search.camera.gallery.image';
 
     Linking.openURL(storeUrl).catch(() => {
-      Alert.alert('Error', 'Could not open Google Play Store automatically.');
+      Alert.alert('Rate Us', 'Thank you for using our app! Your rating helps us improve.');
     });
   };
 
@@ -388,7 +388,7 @@ function AppDrawerInner({ isOpen, onClose, navigation }) {
 
             <Text style={styles.termsSectionTitle}>7. Contacting Us</Text>
             <Text style={styles.termsText}>
-              If you have any questions about these Terms of Service, please reach out to customer support at support@viberay.com.
+              If you have any questions about these Terms of Service, please reach out to customer support at reverseimagesearch64@gmail.com.
             </Text>
           </ScrollView>
         </SafeAreaView>

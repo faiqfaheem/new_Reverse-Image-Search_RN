@@ -36,7 +36,6 @@ import {
 } from 'lucide-react-native';
 import { ExpoSpeechRecognitionModule, useSpeechRecognitionEvent } from 'expo-speech-recognition';
 import Logo from '../components/Logo';
-import { usePremium } from '../context/PremiumContext';
 import { addHistoryEntry } from '../utils/historyManager';
 import AppDrawer from '../components/AppDrawer';
 import AIArtDashboardScreen from './AIArtDashboardScreen';
@@ -56,7 +55,6 @@ const QR_H = Math.min(200 * scale, SCREEN_HEIGHT * 0.13);
 
 export default function HomeScreen({ route, onSearch, navigation }) {
   const insets = useSafeAreaInsets();
-  const { isPremiumUser } = usePremium();
   const [activeTab, setActiveTab] = useState('explore');
   const [downloadsIsAIOnly, setDownloadsIsAIOnly] = useState(false);
 
@@ -73,11 +71,6 @@ export default function HomeScreen({ route, onSearch, navigation }) {
   }, [route?.params?.tab, route?.params?.isAIOnly]);
 
   const handleFeaturePress = (feature) => {
-    // Temporarily disabled premium gating
-    // if (feature.isPremiumRequired && !isPremiumUser) {
-    //   navigation.navigate('PremiumVIP');
-    //   return;
-    // }
     navigation.navigate(feature.targetScreen);
   };
 
@@ -997,14 +990,6 @@ const styles = StyleSheet.create({
     fontSize: 48.68 * scale,
     fontWeight: 'bold',
   },
-  explorePremiumBtn: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  explorePremiumIcon: {
-    width: 94 * scale,
-    height: 94 * scale,
-  },
   exploreScrollContent: {
     paddingTop: 0,
     paddingBottom: BOTTOM_BAR_HEIGHT + 24,
@@ -1226,21 +1211,6 @@ const styles = StyleSheet.create({
   bottomTabActiveText: {
     color: '#007AFF',
   },
-  premiumHeaderBtn: {
-    position: 'absolute',
-    left: 938 * scale,
-    top: 177 * scale,
-    width: 94 * scale,
-    height: 94 * scale,
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 10,
-  },
-  premiumHeaderIcon: {
-    width: '100%',
-    height: '100%',
-  },
-
   // Editor Styles
   editorContainer: { flex: 1, backgroundColor: '#000', width: '100%', height: '100%' },
   editorHeader: {

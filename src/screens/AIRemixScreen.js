@@ -30,7 +30,6 @@ import { checkUsageLimit, incrementUsage } from '../utils/usageLimitManager';
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const scale = SCREEN_WIDTH / 1080;
 
-// TODO: Fetch these templates dynamically from a backend or secure asset repository
 const STYLE_TEMPLATES = [
   {
     id: 'monster-hunter',
@@ -725,7 +724,7 @@ export default function AIRemixScreen({ route, navigation }) {
 
 
 
-      {/* Floating custom premium Toast component */}
+      {/* Floating custom Toast component */}
       {toastVisible && (
         <Animated.View style={[styles.toastContainer, { opacity: toastOpacity }]}>
           <Text style={styles.toastText}>{toastMessage}</Text>

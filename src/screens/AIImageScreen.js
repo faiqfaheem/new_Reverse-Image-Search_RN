@@ -21,7 +21,6 @@ import { useFocusEffect } from '@react-navigation/native';
 import { ArrowLeft, ArrowRight, ChevronDown, ChevronUp, Plus, X } from 'lucide-react-native';
 import { checkUsageLimit, incrementUsage } from '../utils/usageLimitManager';
 
-// TODO: Fetch styles dynamically from a backend
 const STYLE_TEMPLATES = [
   { id: '3d-Model', name: '3D Model', image: require('../components/tempelates/3d.png'), style_preset: '3d-model' },
   { id: 'Analog-film', name: 'Analog Film', image: require('../components/tempelates/analog_film.png'), style_preset: 'analog-film' },

@@ -118,20 +118,16 @@ export default function ResultScreen({ searchQuery: propSearchQuery, imageUri: p
   };
 
   const handleBack = () => {
-    if (Platform.OS === 'ios') {
+    if (navigation?.canGoBack()) {
+      navigation.goBack();
+    } else if (navigation) {
       try {
-        navigation?.navigate('Home');
-      } catch (_) {
-        navigation?.navigate('HomeScreen');
-      }
-    } else {
-      if (navigation?.canGoBack()) {
-        navigation.goBack();
-      } else if (navigation) {
         navigation.navigate('Home');
-      } else if (onBack) {
-        onBack();
+      } catch (_) {
+        navigation.navigate('HomeScreen');
       }
+    } else if (onBack) {
+      onBack();
     }
   };
 
@@ -916,17 +912,6 @@ export default function ResultScreen({ searchQuery: propSearchQuery, imageUri: p
           }
           : { bottom: Math.max(insets.bottom, 0) }
       ]}>
-        {/* <Image
-          source={require('../components/rectangle_71.png')}
-          style={[
-            styles.bottomTabBarBg,
-            Platform.OS === 'ios' && {
-              width: Math.round(1080 * scale),
-              height: Math.round(166 * scale),
-            },
-          ]}
-          resizeMode="cover"
-        /> */}
         {browsers.map((browser) => {
           const isActive = activeBrowser === browser.id;
           return (

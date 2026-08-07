@@ -128,13 +128,6 @@ export default function AIArtDashboardScreen({ navigation, isTab, onOpenDrawer, 
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Image Search</Text>
         </View>
-        {/* <TouchableOpacity onPress={() => navigation?.navigate('PremiumVIP')} activeOpacity={0.8}>
-          <Image
-            source={require('../components/image 30.png')}
-            style={styles.headerCrown}
-            resizeMode="contain"
-          />
-        </TouchableOpacity> */}
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>

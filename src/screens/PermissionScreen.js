@@ -19,8 +19,7 @@ import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import PermissionLogo from '../components/PermissionLogo';
 import { Check, X } from 'lucide-react-native';
 import { Camera } from 'expo-camera';
-// TODO: Re-enable when adding notification features
-// import * as Notifications from 'expo-notifications';
+import * as Notifications from 'expo-notifications';
 import * as ImagePicker from 'expo-image-picker';
 import * as MediaLibrary from 'expo-media-library';
 import { ExpoSpeechRecognitionModule } from 'expo-speech-recognition';
@@ -70,7 +69,7 @@ export default function PermissionScreen({ onPermissionsGranted, navigation }) {
   const [permissions, setPermissions] = useState({
     camera: null,
     media: null,
-    // notifications: null, // TODO: Re-enable when adding notification features
+    notifications: null,
     microphone: null,
   });
 
@@ -88,14 +87,21 @@ export default function PermissionScreen({ onPermissionsGranted, navigation }) {
         canAskAgain: true
       };
 
-      // TODO: Re-enable when adding notification features
-      // const notificationsStatus = await Notifications.getPermissionsAsync();
-      const microphoneStatus = { granted: true, status: 'granted' }; // Automatically granted
+      const notificationsStatus = await Notifications.getPermissionsAsync();
+      let microphoneStatus = { granted: false, status: 'undetermined' };
+      try {
+        if (ExpoSpeechRecognitionModule?.getPermissionsAsync) {
+          const micRes = await ExpoSpeechRecognitionModule.getPermissionsAsync();
+          if (micRes) microphoneStatus = micRes;
+        }
+      } catch (_) {
+        microphoneStatus = { granted: true, status: 'granted' };
+      }
 
       return {
         camera: cameraStatus,
         media: mediaStatusCombined,
-        // notifications: notificationsStatus, // TODO: Re-enable
+        notifications: notificationsStatus,
         microphone: microphoneStatus,
       };
     } catch (error) {
@@ -103,8 +109,8 @@ export default function PermissionScreen({ onPermissionsGranted, navigation }) {
       return {
         camera: { granted: false, status: 'undetermined' },
         media: { granted: false, status: 'undetermined' },
-        // notifications: { granted: false, status: 'undetermined' }, // TODO: Re-enable
-        microphone: { granted: true, status: 'granted' },
+        notifications: { granted: false, status: 'undetermined' },
+        microphone: { granted: false, status: 'undetermined' },
       };
     }
   };
@@ -117,7 +123,6 @@ export default function PermissionScreen({ onPermissionsGranted, navigation }) {
     const allGranted = Boolean(
       isGranted(status.camera) &&
       isGranted(status.media) &&
-      // isGranted(status.notifications) && // TODO: Re-enable when adding notification features
       isGranted(status.microphone)
     );
 
@@ -130,8 +135,11 @@ export default function PermissionScreen({ onPermissionsGranted, navigation }) {
   };
 
   useEffect(() => {
-    // Block hardware back button during permission flow — user must grant permissions
-    const backSub = BackHandler.addEventListener('hardwareBackPress', () => true);
+    // Hardware back button exits app gracefully instead of trapped blank state
+    const backSub = BackHandler.addEventListener('hardwareBackPress', () => {
+      BackHandler.exitApp();
+      return true;
+    });
 
     // Initial check on launch
     syncAndCheck(true);
@@ -226,28 +234,6 @@ export default function PermissionScreen({ onPermissionsGranted, navigation }) {
     }
   };
 
-  // TODO: Re-enable when adding notification features
-  // const handleRequestNotifications = async () => {
-  //   if (busy) return;
-  //   setBusy(true);
-  //   try {
-  //     const res = await Notifications.requestPermissionsAsync({
-  //       ios: {
-  //         allowAlert: true,
-  //         allowBadge: true,
-  //         allowSound: true,
-  //       },
-  //     });
-  //     setPermissions((prev) => ({ ...prev, notifications: res }));
-  //     return res;
-  //   } catch (error) {
-  //     console.error('Failed to request Notifications permission:', error);
-  //     Alert.alert('Permission Error', 'Failed to request notification permission.');
-  //   } finally {
-  //     setBusy(false);
-  //   }
-  // };
-
   const handleRequestMicrophone = async () => {
     if (busy) return;
     setBusy(true);
@@ -307,14 +293,6 @@ export default function PermissionScreen({ onPermissionsGranted, navigation }) {
       request: handleRequestCamera,
       settingsLabel: 'CAMERA',
     },
-    // TODO: Re-enable when adding notification features
-    // {
-    //   key: 'notifications',
-    //   title: 'Notification Permission',
-    //   status: permissions.notifications,
-    //   request: handleRequestNotifications,
-    //   settingsLabel: 'NOTIFICATIONS',
-    // },
   ];
 
   const handlePermissionRequest = async (item) => {
@@ -495,8 +473,8 @@ export default function PermissionScreen({ onPermissionsGranted, navigation }) {
         </View>
       </View>
 
-      {/* Button at the bottom matching Figma coordinates X 63, Y 2142, W 953, H 139, Radius 15, Fill #ADC7FF */}
-      <View style={[styles.buttonContainer, { marginBottom: 4 * scale }]}>
+      {/* Button & Privacy Policy Footer */}
+      <View style={[styles.buttonContainer, { marginBottom: 12 * scale, alignItems: 'center' }]}>
         <Pressable
           onPress={handleActionButtonPress}
           style={({ pressed }) => [
@@ -515,6 +493,15 @@ export default function PermissionScreen({ onPermissionsGranted, navigation }) {
             style={[styles.primaryButtonText, { fontSize: 45 * scale }]}
           >
             {actionButtonText}
+          </Text>
+        </Pressable>
+
+        <Pressable
+          onPress={() => Linking.openURL('https://sites.google.com/view/searchaiimagegen-privacypolicy')}
+          style={{ marginTop: 14 * scale, paddingVertical: 6 }}
+        >
+          <Text style={{ color: '#8E8E93', fontSize: 13, textDecorationLine: 'underline', textAlign: 'center' }}>
+            Privacy Policy & Terms
           </Text>
         </Pressable>
       </View>

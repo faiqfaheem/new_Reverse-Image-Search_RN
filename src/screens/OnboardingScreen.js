@@ -8,7 +8,8 @@ import {
   StatusBar,
   Image,
   ScrollView,
-  Platform
+  Platform,
+  Linking
 } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -158,6 +159,15 @@ export default function OnboardingScreen({ navigation }) {
             >
               <Text numberOfLines={1} adjustsFontSizeToFit={true} style={styles.primaryButtonText}>
                 {currentIndex === 2 ? "GET STARTED" : "Next →"}
+              </Text>
+            </Pressable>
+
+            <Pressable
+              onPress={() => Linking.openURL('https://sites.google.com/view/searchaiimagegen-privacypolicy')}
+              style={{ marginTop: 12 * scale, paddingVertical: 4 }}
+            >
+              <Text style={{ color: '#8E8E93', fontSize: 13, textDecorationLine: 'underline', textAlign: 'center' }}>
+                Privacy Policy & Terms
               </Text>
             </Pressable>
           </View>

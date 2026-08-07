@@ -21,7 +21,7 @@ export async function generateAIImage(promptText, options = {}) {
   try {
     const apiKey = process.env.EXPO_PUBLIC_DEAPI_API_KEY;
     if (!apiKey) {
-      throw new Error("EXPO_PUBLIC_DEAPI_API_KEY is not defined in your .env configuration.");
+      throw new Error("API Key for AI image generation is not configured. Please check your environment variables.");
     }
 
     // 1. Simplified Style Mapping
@@ -195,7 +195,7 @@ export async function generateImageToImage(sourceImageUri, style_preset, options
   try {
     const apiKey = process.env.EXPO_PUBLIC_DEAPI_API_KEY;
     if (!apiKey) {
-      throw new Error("EXPO_PUBLIC_DEAPI_API_KEY is not defined in your .env configuration.");
+      throw new Error("API Key for AI image generation is not configured. Please check your environment variables.");
     }
 
     const ratioToSize = {

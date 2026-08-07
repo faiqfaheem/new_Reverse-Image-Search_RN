@@ -14,7 +14,6 @@ import DownloadsScreen from '../screens/DownloadsScreen';
 import HistoryScreen from '../screens/HistoryScreen';
 import AIRemixScreen from '../screens/AIRemixScreen';
 import OnboardingScreen from '../screens/OnboardingScreen';
-import PremiumVIPScreen from '../screens/PremiumVIPScreen';
 import PermissionScreen from '../screens/PermissionScreen';
 import { usePremium } from '../context/PremiumContext';
 
@@ -70,7 +69,6 @@ export default function AppNavigator({ isAuthorized, onPermissionsGranted }) {
           component={OnboardingScreen} 
           options={{ animation: 'none', gestureEnabled: false }}
         />
-        <Stack.Screen name="PremiumVIP" component={PremiumVIPScreen} />
         <Stack.Screen 
           name="Home" 
           component={HomeScreen} 

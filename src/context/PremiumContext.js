@@ -5,27 +5,14 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 const PremiumContext = createContext(null);
 
 const ONBOARDING_FILE_PATH = FileSystem.documentDirectory + 'onboarding_complete.json';
-const PREMIUM_FILE_PATH = FileSystem.documentDirectory + 'premium_status.json';
 
 export function PremiumProvider({ children }) {
-  const [isPremiumUser, setIsPremiumUser] = useState(false);
   const [isOnboardingComplete, setIsOnboardingComplete] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const loadStorageData = async () => {
       try {
-        // Check premium status
-        let premiumFileExists = false;
-        try {
-          const premiumInfo = await FileSystem.getInfoAsync(PREMIUM_FILE_PATH);
-          premiumFileExists = premiumInfo.exists;
-        } catch (e) {}
-
-        if (premiumFileExists) {
-          setIsPremiumUser(true);
-        }
-
         // Check onboarding completion status via AsyncStorage (primary) and FileSystem (fallback)
         let isCompleted = false;
         try {
@@ -49,7 +36,7 @@ export function PremiumProvider({ children }) {
           setIsOnboardingComplete(false);
         }
       } catch (error) {
-        console.warn('Error loading premium or onboarding status:', error);
+        console.warn('Error loading onboarding status:', error);
       } finally {
         setIsLoading(false);
       }
@@ -69,22 +56,6 @@ export function PremiumProvider({ children }) {
     }
   };
 
-  const unlockPremium = async () => {
-    try {
-      await FileSystem.writeAsStringAsync(PREMIUM_FILE_PATH, JSON.stringify({ premium: true }));
-      setIsPremiumUser(true);
-      await flagOnboardingComplete();
-    } catch (error) {
-      console.warn('Error unlocking premium:', error);
-      setIsPremiumUser(true);
-      setIsOnboardingComplete(true);
-    }
-  };
-
-  const bypassPremium = async () => {
-    await flagOnboardingComplete();
-  };
-
   const resetOnboarding = async () => {
     try {
       await AsyncStorage.removeItem('hasCompletedOnboarding');
@@ -99,11 +70,10 @@ export function PremiumProvider({ children }) {
   return (
     <PremiumContext.Provider
       value={{
-        isPremiumUser,
+        isPremiumUser: true,
         isOnboardingComplete,
         isLoading,
-        unlockPremium,
-        bypassPremium,
+        flagOnboardingComplete,
         resetOnboarding,
         setIsOnboardingComplete,
       }}
