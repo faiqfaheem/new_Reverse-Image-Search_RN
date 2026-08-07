@@ -401,16 +401,12 @@ export default function AIRemixScreen({ route, navigation }) {
   const handleHeaderBack = () => {
     if (loading) return;
     if (currentPhase === 1) {
-      if (Platform.OS === 'ios') {
-        try {
-          navigation?.navigate('Home');
-        } catch (_) {
-          navigation?.navigate('HomeScreen');
-        }
+      if (navigation?.canGoBack()) {
+        navigation.goBack();
       } else {
-        if (navigation?.canGoBack()) {
-          navigation.goBack();
-        } else {
+        try {
+          navigation?.navigate('AIArtDashboard');
+        } catch (_) {
           navigation?.navigate('Home');
         }
       }

@@ -163,7 +163,7 @@ export default function OnboardingScreen({ navigation }) {
             </Pressable>
 
             <Pressable
-              onPress={() => Linking.openURL('https://sites.google.com/view/searchaiimagegen-privacypolicy')}
+              onPress={() => Linking.openURL(Platform.OS === 'ios' ? 'https://sites.google.com/view/reverseimage-privacypolicy' : 'https://sites.google.com/view/searchaiimagegen-privacypolicy')}
               style={{ marginTop: 12 * scale, paddingVertical: 4 }}
             >
               <Text style={{ color: '#8E8E93', fontSize: 13, textDecorationLine: 'underline', textAlign: 'center' }}>

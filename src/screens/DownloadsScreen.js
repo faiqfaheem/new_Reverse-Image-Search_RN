@@ -20,7 +20,6 @@ import { Trash2, X, Download, Check, ArrowLeft, Share2 } from 'lucide-react-nati
 import * as MediaLibrary from 'expo-media-library';
 import * as FileSystem from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
-import RNShare from 'react-native-share';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getSavedDownloads, deleteSavedDownload, deleteMultipleSavedDownloads, formatFileUri } from '../utils/downloadManager';
 import { useFocusEffect } from '@react-navigation/native';
@@ -150,20 +149,16 @@ export default function DownloadsScreen({ route, navigation, isTab, onOpenDrawer
         uri = cacheUri;
       }
 
-      await RNShare.open({
-        url: uri,
-        type: 'image/*',
-        failOnCancel: false,
-      });
-    } catch (err) {
-      if (err && err.message && !err.message.includes('User did not share') && !err.message.includes('CANCELLED')) {
-        try {
-          await Sharing.shareAsync(formatFileUri(asset.uri), {
-            dialogTitle: 'Share Image',
-            mimeType: 'image/jpeg',
-          });
-        } catch (_) {}
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(uri, {
+          dialogTitle: 'Share Image',
+          mimeType: 'image/jpeg',
+        });
+      } else {
+        await Share.share({ url: uri });
       }
+    } catch (err) {
+      console.log('Share error:', err);
     }
   };
 
@@ -228,23 +223,18 @@ export default function DownloadsScreen({ route, navigation, isTab, onOpenDrawer
       const validUrls = fileUrls.filter(Boolean);
       if (validUrls.length === 0) return;
 
-      if (validUrls.length === 1) {
-        await RNShare.open({
-          url: validUrls[0],
-          type: 'image/*',
-          failOnCancel: false,
-        });
+      if (await Sharing.isAvailableAsync()) {
+        for (const url of validUrls) {
+          await Sharing.shareAsync(url, {
+            dialogTitle: 'Share Image',
+            mimeType: 'image/jpeg',
+          });
+        }
       } else {
-        await RNShare.open({
-          urls: validUrls,
-          type: 'image/*',
-          failOnCancel: false,
-        });
+        await Share.share({ url: validUrls[0] });
       }
     } catch (err) {
-      if (err && err.message && !err.message.includes('User did not share') && !err.message.includes('CANCELLED')) {
-        console.log('Bulk share error:', err);
-      }
+      console.log('Bulk share error:', err);
     } finally {
       setLoading(false);
     }

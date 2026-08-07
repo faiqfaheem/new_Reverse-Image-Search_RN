@@ -2,13 +2,14 @@
   "expo": {
     "name": "Reverse Image Search",
     "slug": "reverse-image-search-app",
-    "version": "1.0.4",
+    "version": "1.0.1",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "ios": {
       "icon": "./assets/ios-icon.png",
       "supportsTablet": true,
       "jsEngine": "hermes",
+      "buildNumber": "2",
       "infoPlist": {
         "NSCameraUsageDescription": "Allow this app to access your camera to scan QR codes and capture images for search.",
         "NSMicrophoneUsageDescription": "Allow this app to access the microphone for voice search.",

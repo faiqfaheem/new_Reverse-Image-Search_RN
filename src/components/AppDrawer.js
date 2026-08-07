@@ -416,7 +416,7 @@ function AppDrawerInner({ isOpen, onClose, navigation }) {
           {/* Web View for Privacy Policy */}
           <View style={{ flex: 1, backgroundColor: '#191919' }}>
             <WebView
-              source={{ uri: 'https://sites.google.com/view/searchaiimagegen-privacypolicy' }}
+              source={{ uri: Platform.OS === 'ios' ? 'https://sites.google.com/view/reverseimage-privacypolicy' : 'https://sites.google.com/view/searchaiimagegen-privacypolicy' }}
               style={{ flex: 1, backgroundColor: '#191919' }}
               startInLoadingState={true}
               renderLoading={() => (

@@ -131,16 +131,12 @@ export default function AIImageScreen({ navigation }) {
         <TouchableOpacity
           style={styles.backBtn}
           onPress={() => {
-            if (Platform.OS === 'ios') {
-              try {
-                navigation?.navigate('Home');
-              } catch (_) {
-                navigation?.navigate('HomeScreen');
-              }
+            if (navigation?.canGoBack()) {
+              navigation.goBack();
             } else {
-              if (navigation?.canGoBack()) {
-                navigation.goBack();
-              } else {
+              try {
+                navigation?.navigate('AIArtDashboard');
+              } catch (_) {
                 navigation?.navigate('Home');
               }
             }
